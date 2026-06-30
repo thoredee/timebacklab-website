@@ -710,6 +710,10 @@ footer {
     padding: 64px 0;
   }
 
+  .sec-volt {
+    padding-top: 116px;
+  }
+
   .sec-inner,
   .problem-inner {
     padding: 0 20px;
