@@ -35,8 +35,8 @@ a {
   position: fixed;
   top: 16px;
   left: 50%;
-  width: calc(100% - 32px);
-  max-width: 1180px;
+  width: calc(100% - 48px);
+  max-width: 1500px;
   z-index: 1000;
   padding: 10px 14px 10px 24px;
   background: #FBF9F2;
@@ -79,7 +79,7 @@ a {
 }
 
 .logo-lab {
-  color: #B8D400;
+  color: #C6E000;
 }
 
 .nav-links {
@@ -658,7 +658,7 @@ footer {
 @media (max-width: 640px) {
   #site-nav {
     top: 12px;
-    width: calc(100% - 24px);
+    width: calc(100% - 32px);
     padding: 10px 12px 10px 18px;
     border-radius: 22px;
     flex-wrap: wrap;
