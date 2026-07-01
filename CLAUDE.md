@@ -31,11 +31,14 @@ git config user.name "Thore Donner"
 ## Folder Structure
 ```
 timebacklab-website/
-  ├── index.html              Home page (only page built so far)
+  ├── index.html              Home page
+  ├── quiz.html               Timeback Score Quiz (linked from homepage's "Start your Timeback Score" button)
   ├── css/
-  │   └── style.css
+  │   ├── style.css            Shared nav, footer, homepage sections
+  │   └── quiz.css             Quiz-specific styles (stage, cards, results, tier themes)
   ├── js/
-  │   └── main.js              Nav scroll behaviour, mobile menu, marquee animation
+  │   ├── main.js              Nav scroll behaviour, mobile menu, marquee animation
+  │   └── quiz.js              Quiz state machine, scoring, and rendering (vanilla JS, no framework)
   ├── images/                  Compressed production images (see Image Pipeline below)
   ├── docs/
   │   ├── SETUP.md
@@ -44,6 +47,11 @@ timebacklab-website/
   ├── .gitignore
   └── CLAUDE.md
 ```
+
+## Timeback Score Quiz
+`quiz.html` is a 10-question adaptive diagnostic (gated by business size + role) that produces a Timeback Score and a tier-based result (Trapped / Overloaded / Stretched / In the driver's seat). It was originally handed off from Claude Design as a "Design Component" (DC) bundle that depended on a React-based runtime (`support.js`) loaded from a CDN. That runtime was **not used** — it conflicted with the site's vanilla, no-framework stack, had no mobile hamburger nav, and had a results-page width bug (hardcoded `max-width:1600px` override plus fixed-pixel dimensions on the report section). Instead, the quiz was rebuilt as plain HTML/CSS/JS: `js/quiz.js` reimplements the same question banks, scoring logic and tiers as a small vanilla state machine that re-renders `#quiz-root` on each interaction, and `quiz.css` reuses the homepage's nav/footer styles from `style.css` plus tier theming via CSS custom properties (`--tier-bg`, `--tier-heading`, etc. set through `[data-tier="..."]` selectors).
+
+Current scope: the quiz runs entirely client-side and does not persist results anywhere (no database/sheet integration yet — a future step). The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
 
 ## Design Source
 Built from a Claude Design handoff bundle (`_handoff/timeback-brand-dna-development/`), specifically `project/Timeback Homepage.dc.html`. That folder also contains a Brand DNA doc, Component Guide, and Writing Style Guide for the wider brand — useful reference if more pages are built later. The `_handoff` folder is gitignored; it's a local reference only, not part of the deployed site.

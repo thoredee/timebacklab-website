@@ -1,0 +1,575 @@
+/* ============================================
+   timebacklab — Timeback Score Quiz
+   ============================================ */
+
+body.quiz-body {
+  background: #00BBFF;
+}
+
+/* ============================================
+   QUIZ STAGE
+   ============================================ */
+
+.quiz-stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 150px 64px 110px;
+}
+
+.quiz-card {
+  width: 100%;
+  max-width: 900px;
+  background: #DCF078;
+  border-radius: 28px;
+  padding: 64px 72px;
+}
+
+.quiz-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 56px;
+}
+
+.quiz-progress-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #666666;
+  white-space: nowrap;
+}
+
+.quiz-progress-track {
+  flex: 1;
+  height: 14px;
+  background: #EDEDE6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: #C6E000;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.quiz-card h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: #8A0028;
+  margin-bottom: 16px;
+}
+
+.quiz-card > div > p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #000000;
+  max-width: 560px;
+  margin-bottom: 44px;
+}
+
+.quiz-question-block p {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #000000;
+  max-width: 900px;
+  margin-bottom: 0;
+}
+
+.gating-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.option-card {
+  border-radius: 16px;
+  padding: 22px 20px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  background: #FFD0DC;
+  border: 2px solid transparent;
+  color: #26292A;
+  font-family: inherit;
+  width: 100%;
+}
+
+.option-card:hover {
+  box-shadow: 6px 6px 0 #EE0072;
+}
+
+.option-card.selected {
+  background: #EE0072;
+  border: 2px solid #EE0072;
+  color: #FFFFFF;
+  box-shadow: 6px 6px 0 #000000;
+}
+
+.gating-option {
+  padding: 32px 24px;
+  text-align: center;
+  align-items: center;
+  font-weight: 800;
+}
+
+.gating-option .option-title {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #252525;
+}
+
+.gating-option.selected .option-title {
+  color: #FFFFFF;
+}
+
+.option-sub {
+  font-size: 14px;
+  opacity: 0.6;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.scale-option {
+  min-height: 104px;
+  justify-content: center;
+}
+
+.scale-option .option-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.quiz-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  margin-top: 48px;
+}
+
+.quiz-question-block .question-text {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #26292A;
+  margin-bottom: 20px;
+  max-width: 900px;
+}
+
+.quiz-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 56px;
+}
+
+.quiz-back-btn {
+  background: #b0e2ff;
+  border: none;
+  color: #26292A;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.quiz-back-btn[disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quiz-next-btn {
+  background: #480078;
+  color: #DDD0FF;
+  border: none;
+  padding: 16px 36px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.quiz-next-btn[disabled] {
+  background: #DDD0FF;
+  color: #480078;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   RESULTS
+   ============================================ */
+
+.results-section {
+  padding: 110px 64px;
+  background: var(--tier-bg, #480078);
+}
+
+.results-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.results-top-row {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.results-headline {
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  color: var(--tier-heading, #C8B4EE);
+  margin-bottom: 24px;
+}
+
+.results-narrative {
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--tier-body, rgba(200,180,238,0.82));
+  max-width: 560px;
+  margin-bottom: 28px;
+}
+
+.results-cta-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.results-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tier-cta-bg, #C6E000);
+  color: var(--tier-cta-color, #26292A);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: 12px;
+}
+
+.results-restart-btn {
+  background: #DDD0FF;
+  border: none;
+  color: #252525;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.results-cards-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.results-cards-row > * {
+  min-width: 0;
+  flex: 1 1 0px;
+  max-width: 300px;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  border-radius: 22px;
+}
+
+.gauge-card {
+  background: #EE0072;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-wrap {
+  position: relative;
+  width: 60%;
+  height: 60%;
+}
+
+.gauge-wrap svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.gauge-track {
+  stroke: rgba(255,255,255,0.3);
+  stroke-width: 14;
+}
+
+.gauge-fill {
+  stroke: #C6E000;
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-number {
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.gauge-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  margin-top: 10px;
+}
+
+.prescription-card {
+  background: #00BBFF;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.leak-name {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #26292A;
+  margin-bottom: 14px;
+}
+
+.leak-blurb {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: rgba(38,41,42,0.85);
+}
+
+/* ============================================
+   REPORT UPSELL
+   ============================================ */
+
+.report-section {
+  background: #FFD400;
+  padding: 90px 64px;
+}
+
+.report-inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  align-items: center;
+  gap: 80px;
+}
+
+.report-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.report-image-wrap img {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+
+.report-copy h2 {
+  font-size: clamp(32px, 4.2vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  color: #6b5a00;
+  margin-bottom: 24px;
+}
+
+.report-copy p {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #252525;
+  max-width: 620px;
+  margin-bottom: 40px;
+}
+
+.report-copy .report-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #26292A;
+  color: #C6E000;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: 999px;
+}
+
+/* ============================================
+   TIER THEMES
+   ============================================ */
+
+.results-section[data-tier="trapped"] {
+  --tier-bg: #7D0025;
+  --tier-heading: #F0EECC;
+  --tier-body: rgba(240,238,204,0.82);
+  --tier-cta-bg: #C6E000;
+  --tier-cta-color: #26292A;
+}
+
+.results-section[data-tier="overloaded"] {
+  --tier-bg: #480078;
+  --tier-heading: #C8B4EE;
+  --tier-body: rgba(200,180,238,0.82);
+  --tier-cta-bg: #C6E000;
+  --tier-cta-color: #26292A;
+}
+
+.results-section[data-tier="stretched"] {
+  --tier-bg: #00BBFF;
+  --tier-heading: #C6E000;
+  --tier-body: rgba(255,255,255,0.88);
+  --tier-cta-bg: #C6E000;
+  --tier-cta-color: #26292A;
+}
+
+.results-section[data-tier="driver"] {
+  --tier-bg: #C6E000;
+  --tier-heading: #4A4800;
+  --tier-body: rgba(74,72,0,0.82);
+  --tier-cta-bg: #26292A;
+  --tier-cta-color: #C6E000;
+}
+
+/* ============================================
+   RESPONSIVE — TABLET (≤980px)
+   ============================================ */
+
+@media (max-width: 980px) {
+  .quiz-stage {
+    padding: 130px 32px 90px;
+  }
+
+  .quiz-card {
+    padding: 48px 40px;
+    border-radius: 22px;
+  }
+
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .option-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .results-top-row {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .results-cards-row {
+    flex-wrap: wrap;
+  }
+
+  .report-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .report-image-wrap {
+    justify-content: center;
+  }
+
+  .report-copy {
+    text-align: left;
+  }
+}
+
+/* ============================================
+   RESPONSIVE — MOBILE (≤640px)
+   ============================================ */
+
+@media (max-width: 640px) {
+  .quiz-stage {
+    padding: 110px 16px 64px;
+  }
+
+  .quiz-card {
+    padding: 32px 22px;
+  }
+
+  .gating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .results-section {
+    padding: 72px 24px;
+  }
+
+  .results-cards-row {
+    flex-direction: column;
+  }
+
+  .results-cards-row > * {
+    width: 100%;
+    max-width: none;
+  }
+
+  .report-section {
+    padding: 64px 24px;
+  }
+
+  .report-image-wrap img {
+    max-width: 260px;
+  }
+
+  .quiz-nav-row {
+    margin-top: 40px;
+  }
+}
