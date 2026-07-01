@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '</div>' +
       '<div class="prescription-card">' +
       '<div class="leak-name">' + escapeHtml(leakName) + '</div>' +
-      '<div class="leak-blurb">' + escapeHtml(leakBlurb) + '</div>' +
+      '<div class="leak-blurb">Your number one time leak is ' + escapeHtml(leakName) + '. ' + escapeHtml(leakBlurb) + '</div>' +
       '</div>' +
       '</div>' +
       '</div>' +
