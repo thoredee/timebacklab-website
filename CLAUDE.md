@@ -39,21 +39,25 @@ timebacklab-website/
   ├── quiz.html               Timeback Score Quiz (linked from homepage's "Start your Timeback Score" button)
   ├── legal.html              Legal, Privacy & Terms page (Terms & Conditions, Diagnostic Disclaimer, Privacy Policy — anchors #terms/#diagnostic-disclaimer/#privacy)
   ├── admin.html               Password-gated viewer for stored quiz submissions (not linked from site nav; noindex + robots.txt disallow)
+  ├── report.html              Personalised detailed report page (magic link: report.html?token=<submission_id>; noindex) — see Report Builder below
   ├── robots.txt               Disallows /admin.html from search indexing
   ├── css/
   │   ├── style.css            Shared nav, footer, homepage sections
   │   ├── quiz.css             Quiz-specific styles (stage, cards, results, tier CTA colours)
-  │   └── legal.css            Legal page styles
+  │   ├── legal.css            Legal page styles
+  │   └── report.css           Detailed report page styles (hero + magic link box + report body)
   ├── js/
   │   ├── main.js              Nav scroll behaviour, mobile menu, marquee animation
-  │   └── quiz.js              Quiz state machine, scoring, rendering, and POSTs final results to /api/submit
+  │   ├── quiz.js              Quiz state machine, scoring, rendering, and POSTs final results to /api/submit
+  │   └── report.js            Fetches /api/report?token= and renders the assembled report into report.html
   ├── images/                  Compressed production images (see Image Pipeline below)
   ├── src/                     Cloudflare Worker source (see "Quiz Results Storage" below)
   │   ├── index.js             Worker entry point — routes /api/* then falls back to static assets
   │   └── api/
   │       ├── submit.js          Handles POST /api/submit — writes a quiz result row to D1
   │       ├── admin-submissions.js  Handles GET /api/admin/submissions — password-gated read of all rows
-  │       └── report-nodes.js       Handles GET + PUT /api/admin/report-nodes — password-gated read/edit of report content cells
+  │       ├── report-nodes.js       Handles GET + PUT /api/admin/report-nodes — password-gated read/edit of report content cells
+  │       └── report.js             Handles GET /api/report?token= — public, assembles a submission's personalised report from report_nodes
   ├── wrangler.jsonc           Worker config: entry point, D1 binding, assets directory (committed, not secret — no passwords in here)
   ├── schema.sql               D1 table schema (submissions) — run manually in the D1 dashboard Console, not auto-applied
   ├── schema/
@@ -77,7 +81,7 @@ The results screen (score gauge + leak card) has a **fixed purple background** (
 
 A quiz **intro page** (company name + required, validated email, marketing opt-in, consent copy) was added ahead of the gating questions. Its consent line links out to `legal.html#terms` and `legal.html#privacy` — see `docs/PROGRESS.md` for the detailed build log of that work.
 
-The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
+The tier CTA buttons are still placeholder `#` links, same as other homepage CTAs. The **"Order your report" button is now wired** — on the results screen it links to `report.html?token=<submission_id>` once `POST /api/submit` returns the id (see Report Builder below).
 
 ## Quiz Results Storage
 Every completed quiz POSTs its full results to `/api/submit` (fired once, from `js/quiz.js`'s `render()` the first time the results screen shows), which is handled by the Cloudflare Worker (`src/api/submit.js`) and written to a Cloudflare D1 database (`timebacklab-quiz`, table `submissions`, schema in `schema.sql`). Captured per row: company name, email, marketing opt-in, business size + role, every individual question/category/answer (full detail, not just the summary), computed score/tier/leak category, a unique `submission_id` (UUID) for referencing one result later, and whatever Cloudflare provides for free on every request — IP address, country, region, city, timezone, ISP/org, ASN, and Cloudflare colo. **A MAC address is never obtainable from a web request under any circumstances** (no browser/server exposure path) — don't attempt this again if asked, explain why instead.
@@ -97,7 +101,16 @@ Managed via the **"Manage detailed report replies"** admin menu item: a long fil
 
 **Reviewing/editing report content on request (durable workflow):** the user may ask to review and update report content in the database. Claude **cannot** read or write the live D1 in a session (no `wrangler`, no admin password). So the process is: edit the wording in `docs/report-nodes.md` first (keep the brand voice), then produce **targeted `UPDATE report_nodes SET body='...', word_count=N, updated_at='<ISO>' WHERE id='<composite-id>';` statements for the affected rows only** for the user to paste into the D1 Console — **never a full re-seed for a small edit** (it drops the table and wipes all admin edits). Escape single quotes as `''`. IDs follow the composite scheme (`sum-{section}-{size}-{role}-{tier}`, `{questionId}-{role}-{size}`). The user may also just edit directly in the admin screen; if so, `report-nodes.md` drifts from the live DB and is no longer a byte-perfect backup.
 
-**Out of scope so far — report generator (a future action to design, see Next Steps):** matching a completed submission to these rows and rendering the personalised report is a separate later phase — see `docs/report-content-admin-spec.md`.
+**Report generator — v1 concept test now built (see Report Builder below).** Matching a completed submission to these rows and rendering the personalised report was the "later phase" referenced here; a first working version now exists. The paid gate and other bells and whistles are still deferred.
+
+## Report Builder (`report.html` + `/api/report`)
+A **concept-test v1** of the report generator: it pulls a completed submission's answers together with the D1 report content and renders a personalised, nicely formatted report at a unique link. Deliberately minimal — no payment gate, no PDF, no email yet (all deferred until the concept is confirmed to read well).
+
+- **Entry point:** the quiz results screen's "Order your report" button (in the yellow `.report-section`) links to `report.html?token=<submission_id>`. `js/quiz.js` reads the `submissionId` that `POST /api/submit` returns and wires the button's `href` (id `report-cta-link`) once the POST resolves.
+- **Magic link = `submission_id`.** For v1 the unguessable UUID `submission_id` doubles as the magic-link token — no separate `report_token`, no accounts, no auth. `report.html` shows a "Your private report link" box with the current URL + Copy button so the user can save it and return any time. When the paid-access phase is built (`docs/payment-report-access-spec.md`), swap in a dedicated hardened `report_token`.
+- **API:** `GET /api/report?token=<submission_id>` (`src/api/report.js`, routed in `src/index.js`) — **public, no `X-Admin-Password`** (the token is the secret). Loads the submission from D1, parses `answers_json`, and assembles the report server-side, returning JSON. `report.html`/`js/report.js` render it client-side (purple summary top-card, one white block per section with tier badge + top-leak highlight + summary + flagged findings, dark closing CTA). Graceful states for missing token / not found / network error.
+- **Matching logic (mirror the quiz scoring):** per section, average that section's answers (1–4) and band it with the **same formula the quiz uses** — `percent = ((avg-1)/3)*100`, then ≤24 trapped · ≤49 overloaded · ≤74 stretched · else driver — to pick the `sum-{section}-{size}-{role}-{tier}` summary node. Questions answered **Heavy (1) or Moderate (2)** are treated as flagged leaks and pull their `q{N}-{role}-{size}` question node. **Key mappings:** quiz role → node role is operator→boss, leader→lead, office→office, field→field; quiz question id → node number strips the role prefix (`op1`/`ld1`/`of1`/`fd1` → `q1`). Office Q10 has no node (117 not 120) — only ids actually found in D1 are rendered, so a missing node is skipped silently.
+- **Cannot be verified locally** (needs the Worker + live D1; no `wrangler` on ARM64). Verify on the live URL after deploy by completing a quiz and clicking through, or hit `/api/report?token=<a real submission_id from admin.html>` directly.
 
 ## Legal Page (`legal.html`)
 Built from a Claude Design handoff (`Timeback Legal.dc.html`) combining Terms & Conditions, the Timeback Diagnostic Disclaimer and the Privacy Policy on one page, with anchor IDs (`#terms`, `#diagnostic-disclaimer`, `#privacy`) so other pages can deep-link to a specific section. Linked from: the homepage/quiz footer's Legal column (Privacy → `#privacy`, Terms → `#terms`), and the quiz intro page's consent line ("Terms & Conditions" → `#terms`, "Privacy Policy" → `#privacy`). Styles live in `css/legal.css`; it reuses `#site-nav` and `footer` from `css/style.css` (see the important reminder below — do NOT reuse a Claude Design handoff's own nav/footer markup).
@@ -144,7 +157,7 @@ Most CTA buttons link to `#` — this matches the source design, which only wire
 
 ## Next Steps
 1. **Paid report access — Stripe checkout + magic-link unlock (specced, TO BUILD).** The payment *gate* in front of the report generator: quiz-taker pays a fixed fee by card via Stripe (owner is merchant, money to owner's bank; Amex supported by default), a signature-verified Stripe webhook marks the `submissions` row paid and mints an unguessable `report_token`, and access is via a private **magic link** — **no user accounts** (data kept account-ready; accounts deferred until repeat purchases / group reports / subscriptions justify them). Decisions locked: Stripe (not a merchant-of-record), magic-link (not accounts), **one £ price + Stripe Adaptive Pricing** (local-currency *display* only, not true per-country pricing), global cards accepted (US/India work; Indian cards decline more under RBI rules); report **output format still TBD**. Additive `ALTER TABLE submissions` change + new `POST /api/checkout`, `POST /api/stripe-webhook`, `GET /api/report?token=` routes; two Worker secrets (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`). Full brief: `docs/payment-report-access-spec.md`.
-2. **Report generator (needs thinking through before building).** Build the engine that turns a completed quiz submission into the personalised detailed report by pulling the matching `report_nodes` rows (section summaries by section×size×role×tier from each section's score band, plus the question nodes for each flagged leak). Open decisions first: output format (on-site HTML page vs downloadable PDF/doc), where it is triggered (likely the paid-report request flow above), how score bands map to tiers per section, and how the finished report is stored/delivered. Content + storage are ready; this is the remaining phase. See `docs/report-content-admin-spec.md`, `docs/payment-report-access-spec.md`, and the Detailed Report Content Manager section above.
+2. **Report generator — v1 concept test SHIPPED (see Report Builder section); enhancements remaining.** The engine that turns a submission into the personalised report is now built and live (`report.html` + `/api/report`, matching section summaries by per-section tier band + flagged question nodes). Note: the paid-access route in item 1 (`GET /api/report?token=`) **already exists as a public route** — the payment build should harden it (swap the reused `submission_id` for a dedicated `report_token` that is only minted after payment, and refuse unpaid tokens). Remaining enhancements to consider: downloadable PDF/doc output, email delivery, tuning which answers count as "flagged", and polishing the copy/layout once the user has reviewed the live concept.
 3. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
 4. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
 5. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist

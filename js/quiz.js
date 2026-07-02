@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
     email: '',
     marketingOptIn: false,
     submitted: false,
+    submissionId: null,
   };
 
   function getBank() {
@@ -276,9 +277,20 @@ document.addEventListener('DOMContentLoaded', function () {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    }).catch(function () {
-      // Silently ignore network errors; the result still renders for the user.
-    });
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data && data.submissionId) {
+          state.submissionId = data.submissionId;
+          const link = document.getElementById('report-cta-link');
+          if (link) {
+            link.setAttribute('href', 'report.html?token=' + encodeURIComponent(state.submissionId));
+          }
+        }
+      })
+      .catch(function () {
+        // Silently ignore network errors; the result still renders for the user.
+      });
   }
 
   function toggleMarketingOptIn() {
@@ -498,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<div class="report-copy">' +
       '<h2>Your score is the headline. The report is the story.</h2>' +
       '<p>You could potentially recover ' + displayScore + '% of your time back to focus on what matters most. We can go deeper than a single number. Your full company report breaks down every time leak we found, benchmarks you against businesses like yours, and ranks the fixes by how much time they’ll actually give back. Everything you need to act, in one document.</p>' +
-      '<a href="#" class="report-cta-btn">Order your report</a>' +
+      '<a href="' + (state.submissionId ? 'report.html?token=' + encodeURIComponent(state.submissionId) : '#') + '" id="report-cta-link" class="report-cta-btn">Order your report</a>' +
       '</div>' +
       '</div>' +
       '</section>'
