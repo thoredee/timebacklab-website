@@ -1,25 +1,29 @@
 # timebacklab Website
 
 ## Overview
-Marketing site for timebacklab (Timeback Lab) — a brand helping small business owners reclaim time from operational admin using AI and smart process fixes. Vanilla HTML5 + custom CSS, hosted on Cloudflare Pages. Built from a Claude Design handoff bundle.
+Marketing site for timebacklab (Timeback Lab) — a brand helping small business owners reclaim time from operational admin using AI and smart process fixes. Vanilla HTML5 + custom CSS, served by a Cloudflare Worker (static assets + a small API). Built from a Claude Design handoff bundle.
 
 ## Stack
-- Vanilla HTML5 + custom CSS (no frameworks)
-- Hosted on Cloudflare Pages (free tier)
+- Vanilla HTML5 + custom CSS (no frameworks) for all pages
+- A single Cloudflare Worker (`src/index.js`) serves the static site via `env.ASSETS.fetch()` and handles two API routes (`/api/submit`, `/api/admin/submissions`) backed by a Cloudflare D1 database — all free tier, no new vendor
 - Source repo: https://github.com/thoredee/timebacklab-website
 - Local folder: `C:\Users\thore\OneDrive\Claude Development\timebacklab-website\`
 
 ## Deployment Pipeline
 1. Edit files locally
 2. `git add` / `git commit` / `git push origin main`
-3. Cloudflare Pages auto-deploys on every push — no manual trigger needed
+3. Cloudflare auto-builds and deploys on every push (`npx wrangler deploy` under the hood) — no manual trigger needed. Occasionally a build hangs on "Initializing" indefinitely; if so, cancel it in the Deployments tab and push an empty commit (`git commit --allow-empty`) to retrigger — this resolved it the one time it happened.
 
-## Cloudflare Pages Configuration
-- **Production branch**: `main`
-- **Framework preset**: None
-- **Build command**: (none)
-- **Build output directory**: `/`
-- **Live URL**: https://timebacklab-website.pages.dev/ (plus timebacklab.com once DNS is connected in Cloudflare)
+## Cloudflare Configuration — important: this project runs on Cloudflare's unified **Workers** platform, not classic Pages
+**This is not the original setup.** The project was originally built and deployed as classic Cloudflare Pages (static-only, `functions/` directory for any backend code). Partway through building the quiz-results storage feature (2026-07-02), it became clear Cloudflare had auto-migrated the project to its newer unified Workers platform in the background — evidenced by recurring bot commits ("Add Cloudflare Workers configuration" from `cloudflare-workers-and-config[bot]`) landing on a `cloudflare/workers-autoconfig` branch, going back hours before that was even noticed. **If you're reading this in a future session and something about deployment seems off versus what you'd expect from "classic Pages," this migration is why** — see `docs/PROGRESS.md`'s 2026-07-02 entry for the full diagnostic story.
+
+Consequences of the Workers model (vs. classic Pages) that matter for future work:
+- **No `functions/` directory auto-routing.** Any backend code must be explicit: `wrangler.jsonc`'s `"main"` points at `src/index.js`, which routes known API paths itself and falls back to `env.ASSETS.fetch(request)` for everything else (the actual site pages/assets).
+- **Bindings and secrets (D1, `ADMIN_PASSWORD`, etc.) only work once a real Worker script exists.** The dashboard's Bindings/Variables-and-Secrets UI will reject changes with "Variables cannot be added to a Worker that only has static assets" until `wrangler.jsonc` has a `main` entry. D1 bindings are configured by editing `d1_databases` directly in `wrangler.jsonc` (more reliable than the dashboard's "Add binding" form, which silently failed twice before the script existed) — the dashboard is only needed for the `ADMIN_PASSWORD` secret (Settings → Variables and Secrets → Encrypt).
+- **Static asset serving strips `.html` by default** — e.g. `/quiz.html` 307-redirects to `/quiz` before serving 200. Harmless (internal links still resolve), just don't be surprised by it.
+- **Live URLs**: `https://timebacklab-website.thorespdonner.workers.dev/` (the old `timebacklab-website.pages.dev` no longer resolves at all) — **and `timebacklab.com` / `www.timebacklab.com` are already connected as custom domains** (check Domains tab on the Worker) — DNS is done, this is no longer a "Next Step".
+- **`wrangler` CLI cannot run on this machine.** The user's machine is a Surface Pro 11 (Windows ARM64); `wrangler`'s native `workerd` dependency has no Windows ARM64 build (`npm install` fails: `Unsupported platform: win32 arm64 LE`). All Cloudflare-side config changes (bindings, secrets, D1 schema) have to go through the web dashboard or direct `wrangler.jsonc` edits committed via git — never assume `wrangler` commands can be run locally to verify or fix something.
+- **Build command**: none (per `wrangler.jsonc`) — deploy command is `npx wrangler deploy`, run by Cloudflare's own build pipeline on push, not locally.
 
 ## Local Git Setup
 Set locally (not global) for this repo:
@@ -34,14 +38,24 @@ timebacklab-website/
   ├── index.html              Home page
   ├── quiz.html               Timeback Score Quiz (linked from homepage's "Start your Timeback Score" button)
   ├── legal.html              Legal, Privacy & Terms page (Terms & Conditions, Diagnostic Disclaimer, Privacy Policy — anchors #terms/#diagnostic-disclaimer/#privacy)
+  ├── admin.html               Password-gated viewer for stored quiz submissions (not linked from site nav; noindex + robots.txt disallow)
+  ├── robots.txt               Disallows /admin.html from search indexing
   ├── css/
   │   ├── style.css            Shared nav, footer, homepage sections
   │   ├── quiz.css             Quiz-specific styles (stage, cards, results, tier CTA colours)
   │   └── legal.css            Legal page styles
   ├── js/
   │   ├── main.js              Nav scroll behaviour, mobile menu, marquee animation
-  │   └── quiz.js              Quiz state machine, scoring, and rendering (vanilla JS, no framework)
+  │   └── quiz.js              Quiz state machine, scoring, rendering, and POSTs final results to /api/submit
   ├── images/                  Compressed production images (see Image Pipeline below)
+  ├── src/                     Cloudflare Worker source (see "Quiz Results Storage" below)
+  │   ├── index.js             Worker entry point — routes /api/* then falls back to static assets
+  │   └── api/
+  │       ├── submit.js          Handles POST /api/submit — writes a quiz result row to D1
+  │       └── admin-submissions.js  Handles GET /api/admin/submissions — password-gated read of all rows
+  ├── wrangler.jsonc           Worker config: entry point, D1 binding, assets directory (committed, not secret — no passwords in here)
+  ├── schema.sql               D1 table schema (submissions) — run manually in the D1 dashboard Console, not auto-applied
+  ├── .assetsignore            Excludes src/, docs/, schema.sql, wrangler.jsonc etc. from being served as public static files
   ├── docs/
   │   ├── SETUP.md
   │   └── PROGRESS.md
@@ -55,9 +69,16 @@ timebacklab-website/
 
 The results screen (score gauge + leak card) has a **fixed purple background** (`#480078`) with `#DDD0FF` headline text on every tier — this was a deliberate brand-consistency request, not tier-driven. Only the CTA button colour still varies by tier, via `--tier-cta-bg` / `--tier-cta-color` custom properties set through `.results-section[data-tier="..."]` selectors in `quiz.css`. The leak card body text always leads with "Your number one time leak is [category]." before the category blurb.
 
-Current scope: the quiz runs entirely client-side and does not persist results anywhere (no database/sheet integration yet — a future step). The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
-
 A quiz **intro page** (company name + required, validated email, marketing opt-in, consent copy) was added ahead of the gating questions. Its consent line links out to `legal.html#terms` and `legal.html#privacy` — see `docs/PROGRESS.md` for the detailed build log of that work.
+
+The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
+
+## Quiz Results Storage
+Every completed quiz POSTs its full results to `/api/submit` (fired once, from `js/quiz.js`'s `render()` the first time the results screen shows), which is handled by the Cloudflare Worker (`src/api/submit.js`) and written to a Cloudflare D1 database (`timebacklab-quiz`, table `submissions`, schema in `schema.sql`). Captured per row: company name, email, marketing opt-in, business size + role, every individual question/category/answer (full detail, not just the summary), computed score/tier/leak category, a unique `submission_id` (UUID) for referencing one result later, and whatever Cloudflare provides for free on every request — IP address, country, region, city, timezone, ISP/org, ASN, and Cloudflare colo. **A MAC address is never obtainable from a web request under any circumstances** (no browser/server exposure path) — don't attempt this again if asked, explain why instead.
+
+Results are viewed via `admin.html`, a password-gated page (not linked from site nav, `noindex` + `robots.txt` disallow) that sends the password as an `X-Admin-Password` header to `GET /api/admin/submissions` (`src/api/admin-submissions.js`), checked against the `ADMIN_PASSWORD` secret set in the Cloudflare dashboard (Settings → Variables and Secrets → Encrypt) — never stored in the repo.
+
+See the Cloudflare Configuration section above for the Workers-platform quirks (bindings, `.html` URL stripping, no `wrangler` CLI locally) that shaped how this had to be built, and `docs/PROGRESS.md`'s 2026-07-02 entry for the full build/debugging story.
 
 ## Legal Page (`legal.html`)
 Built from a Claude Design handoff (`Timeback Legal.dc.html`) combining Terms & Conditions, the Timeback Diagnostic Disclaimer and the Privacy Policy on one page, with anchor IDs (`#terms`, `#diagnostic-disclaimer`, `#privacy`) so other pages can deep-link to a specific section. Linked from: the homepage/quiz footer's Legal column (Privacy → `#privacy`, Terms → `#terms`), and the quiz intro page's consent line ("Terms & Conditions" → `#terms`, "Privacy Policy" → `#privacy`). Styles live in `css/legal.css`; it reuses `#site-nav` and `footer` from `css/style.css` (see the important reminder below — do NOT reuse a Claude Design handoff's own nav/footer markup).
@@ -105,8 +126,8 @@ Most CTA buttons link to `#` — this matches the source design, which only wire
 ## Next Steps
 1. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
 2. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
-3. Connect timebacklab.com DNS in Cloudflare
-4. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist
+3. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist
+4. Consider a CSV export or reporting view beyond the raw `admin.html` table, and a data retention/deletion policy for stored quiz submissions (relevant given the Legal/Privacy page commitments)
 
 ## Ongoing Record-Keeping
 Every time a change is built and pushed live, update `docs/PROGRESS.md` with a dated entry (what was built, why, and any open items) and update this CLAUDE.md if the change affects folder structure, known placeholders, or a durable rule future sessions need to know. This has been the practice since the quiz work began — check `docs/PROGRESS.md`'s dated entries for the ongoing history rather than re-deriving it from git log.
