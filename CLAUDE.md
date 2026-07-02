@@ -33,9 +33,11 @@ git config user.name "Thore Donner"
 timebacklab-website/
   ├── index.html              Home page
   ├── quiz.html               Timeback Score Quiz (linked from homepage's "Start your Timeback Score" button)
+  ├── legal.html              Legal / Privacy / Terms page (in progress, backs the quiz's consent links)
   ├── css/
   │   ├── style.css            Shared nav, footer, homepage sections
-  │   └── quiz.css             Quiz-specific styles (stage, cards, results, tier themes)
+  │   ├── quiz.css             Quiz-specific styles (stage, cards, results, tier CTA colours)
+  │   └── legal.css            Legal page styles
   ├── js/
   │   ├── main.js              Nav scroll behaviour, mobile menu, marquee animation
   │   └── quiz.js              Quiz state machine, scoring, and rendering (vanilla JS, no framework)
@@ -49,9 +51,13 @@ timebacklab-website/
 ```
 
 ## Timeback Score Quiz
-`quiz.html` is a 10-question adaptive diagnostic (gated by business size + role) that produces a Timeback Score and a tier-based result (Trapped / Overloaded / Stretched / In the driver's seat). It was originally handed off from Claude Design as a "Design Component" (DC) bundle that depended on a React-based runtime (`support.js`) loaded from a CDN. That runtime was **not used** — it conflicted with the site's vanilla, no-framework stack, had no mobile hamburger nav, and had a results-page width bug (hardcoded `max-width:1600px` override plus fixed-pixel dimensions on the report section). Instead, the quiz was rebuilt as plain HTML/CSS/JS: `js/quiz.js` reimplements the same question banks, scoring logic and tiers as a small vanilla state machine that re-renders `#quiz-root` on each interaction, and `quiz.css` reuses the homepage's nav/footer styles from `style.css` plus tier theming via CSS custom properties (`--tier-bg`, `--tier-heading`, etc. set through `[data-tier="..."]` selectors).
+`quiz.html` is a 10-question adaptive diagnostic (gated by business size + role) that produces a Timeback Score and a tier-based result (Trapped / Overloaded / Stretched / In the driver's seat). It was originally handed off from Claude Design as a "Design Component" (DC) bundle that depended on a React-based runtime (`support.js`) loaded from a CDN. That runtime was **not used** — it conflicted with the site's vanilla, no-framework stack, had no mobile hamburger nav, and had a results-page width bug (hardcoded `max-width:1600px` override plus fixed-pixel dimensions on the report section). Instead, the quiz was rebuilt as plain HTML/CSS/JS: `js/quiz.js` reimplements the same question banks, scoring logic and tiers as a small vanilla state machine that re-renders `#quiz-root` on each interaction, and `quiz.css` reuses the homepage's nav/footer styles from `style.css`.
+
+The results screen (score gauge + leak card) has a **fixed purple background** (`#480078`) with `#DDD0FF` headline text on every tier — this was a deliberate brand-consistency request, not tier-driven. Only the CTA button colour still varies by tier, via `--tier-cta-bg` / `--tier-cta-color` custom properties set through `.results-section[data-tier="..."]` selectors in `quiz.css`. The leak card body text always leads with "Your number one time leak is [category]." before the category blurb.
 
 Current scope: the quiz runs entirely client-side and does not persist results anywhere (no database/sheet integration yet — a future step). The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
+
+A quiz **intro page** (company name + required, validated email, marketing opt-in, consent copy) was added ahead of the gating questions, and a **Legal/Privacy/Terms page** (`legal.html` / `css/legal.css`) is being built to back the "fine print" and footer links — see `docs/PROGRESS.md` for the detailed build log of that work.
 
 ## Design Source
 Built from a Claude Design handoff bundle (`_handoff/timeback-brand-dna-development/`), specifically `project/Timeback Homepage.dc.html`. That folder also contains a Brand DNA doc, Component Guide, and Writing Style Guide for the wider brand — useful reference if more pages are built later. The `_handoff` folder is gitignored; it's a local reference only, not part of the deployed site.
