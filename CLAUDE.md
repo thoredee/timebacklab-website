@@ -52,13 +52,18 @@ timebacklab-website/
   │   ├── index.js             Worker entry point — routes /api/* then falls back to static assets
   │   └── api/
   │       ├── submit.js          Handles POST /api/submit — writes a quiz result row to D1
-  │       └── admin-submissions.js  Handles GET /api/admin/submissions — password-gated read of all rows
+  │       ├── admin-submissions.js  Handles GET /api/admin/submissions — password-gated read of all rows
+  │       └── report-nodes.js       Handles GET + PUT /api/admin/report-nodes — password-gated read/edit of report content cells
   ├── wrangler.jsonc           Worker config: entry point, D1 binding, assets directory (committed, not secret — no passwords in here)
   ├── schema.sql               D1 table schema (submissions) — run manually in the D1 dashboard Console, not auto-applied
+  ├── schema/
+  │   └── report-nodes-seed.sql   D1 schema + 309 seed INSERTs for the report_nodes content table — pasted by hand into the D1 Console (see Detailed Report Content Manager below)
   ├── .assetsignore            Excludes src/, docs/, schema.sql, wrangler.jsonc etc. from being served as public static files
   ├── docs/
   │   ├── SETUP.md
-  │   └── PROGRESS.md
+  │   ├── PROGRESS.md
+  │   ├── report-nodes.md               Source content for all 309 report cells (seed + backup; D1 is the live source of truth)
+  │   └── report-content-admin-spec.md  Spec for the "Manage detailed report replies" admin content manager
   ├── _handoff/                 Claude Design export — gitignored, reference only
   ├── .gitignore
   └── CLAUDE.md
@@ -78,9 +83,18 @@ Every completed quiz POSTs its full results to `/api/submit` (fired once, from `
 
 Results are viewed via `admin.html`, a password-gated page (not linked from site nav, `noindex` + `robots.txt` disallow) that sends the password as an `X-Admin-Password` header to `GET /api/admin/submissions` (`src/api/admin-submissions.js`), checked against the `ADMIN_PASSWORD` secret set in the Cloudflare dashboard (Settings → Variables and Secrets → Encrypt) — never stored in the repo.
 
-`admin.html` is a three-view app (login → console menu → data view), built as a scalable shell for future admin areas: after login, a menu card lists admin sections as icon card-buttons (`MENU_ITEMS` array in the page's script) — only **Timeback score submissions** is live today; **Paid requests for diagnostic reports**, **Group diagnostic reports**, and **Customer account management** are placeholder entries marked "Not live" pending future build-out. To add a new live admin area later: add an entry to `MENU_ITEMS` and a branch in the menu click handler. The submissions data view is a wide card with grouping (by company) and per-field sorting, and a "View" button per row opens a detail modal (submission/company/location fields, then the full question-by-question answers) with **Close** and **Delete record** actions — delete calls `DELETE /api/admin/submissions` (also in `src/api/admin-submissions.js`, same password gate, deletes by `submission_id`).
+`admin.html` is a multi-view app (login → console menu → data views), built as a scalable shell for future admin areas: after login, a menu card lists admin sections as icon card-buttons (`MENU_ITEMS` array in the page's script) — **Timeback score submissions** and **Manage detailed report replies** are live; **Paid requests for diagnostic reports**, **Group diagnostic reports**, and **Customer account management** are placeholder entries marked "Not live" pending future build-out. To add a new live admin area later: add an entry to `MENU_ITEMS`, add a `<div id="...-view">` block, add it to the `showView` array, and add a branch in the menu click handler. The submissions data view is a wide card with grouping (by company) and per-field sorting, and a "View" button per row opens a detail modal (submission/company/location fields, then the full question-by-question answers) with **Close** and **Delete record** actions — delete calls `DELETE /api/admin/submissions` (also in `src/api/admin-submissions.js`, same password gate, deletes by `submission_id`).
 
 See the Cloudflare Configuration section above for the Workers-platform quirks (bindings, `.html` URL stripping, no `wrangler` CLI locally) that shaped how this had to be built, and `docs/PROGRESS.md`'s 2026-07-02 entry for the full build/debugging story.
+
+## Detailed Report Content Manager
+The bespoke Timeback Score report is assembled from **309 pre-written content cells** ("report nodes"): 192 section summaries (keyed `section` × `company_size` × `role` × `tier`) + 117 question nodes (keyed `question_id` × `role` × `company_size`; Q10 has no Office version, so 9 not 12). The written content lives in `docs/report-nodes.md` (the seed + backup) but **Cloudflare D1 is the live source of truth** — table `report_nodes` in the same `timebacklab-quiz` database, schema + all 309 seed INSERTs in `schema/report-nodes-seed.sql`. Composite string IDs, not UUIDs: summaries `sum-{section}-{size}-{role}-{tier}`, questions `{question_id}-{role}-{size}`.
+
+Managed via the **"Manage detailed report replies"** admin menu item: a long filterable/searchable/groupable table of every reply, each with a **View** button opening a modal to view/edit the body text (live word count) and **Save** — Save calls `PUT /api/admin/report-nodes` (`{ id, body }` → updates body, recomputes `word_count`, sets `updated_at`), read via `GET /api/admin/report-nodes`, both in `src/api/report-nodes.js` behind the same `X-Admin-Password` gate. Nodes are fetched lazily when the menu card is clicked.
+
+**Seeding the table is a one-time manual paste** into the D1 dashboard Console (no `wrangler` on ARM64), same as `schema.sql`. The seed file starts with `DROP TABLE IF EXISTS report_nodes`, so **re-running it wipes any edits made through the admin screen** — only re-run it to reset content to the `report-nodes.md` baseline. If `report-nodes.md` is later re-edited in bulk, regenerate the seed with the parser approach and note that re-pasting overwrites live edits.
+
+**Out of scope so far:** the actual report *generator* (matching a completed submission to these rows and rendering the report) is a separate later phase — see `docs/report-content-admin-spec.md`.
 
 ## Legal Page (`legal.html`)
 Built from a Claude Design handoff (`Timeback Legal.dc.html`) combining Terms & Conditions, the Timeback Diagnostic Disclaimer and the Privacy Policy on one page, with anchor IDs (`#terms`, `#diagnostic-disclaimer`, `#privacy`) so other pages can deep-link to a specific section. Linked from: the homepage/quiz footer's Legal column (Privacy → `#privacy`, Terms → `#terms`), and the quiz intro page's consent line ("Terms & Conditions" → `#terms`, "Privacy Policy" → `#privacy`). Styles live in `css/legal.css`; it reuses `#site-nav` and `footer` from `css/style.css` (see the important reminder below — do NOT reuse a Claude Design handoff's own nav/footer markup).

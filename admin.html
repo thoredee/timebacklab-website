@@ -245,6 +245,42 @@
   .qa-category { font-size: 11px; color: #9a9d9e; text-transform: uppercase; letter-spacing: 0.03em; }
   .qa-answer { font-size: 13px; font-weight: 700; color: #C6E000; }
   .modal-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+
+  /* ---- Report-nodes view extras ---- */
+  .toolbar input.rn-search {
+    background: #1c1e1f;
+    color: #FBF9F2;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    min-width: 220px;
+  }
+  .toolbar input.rn-search:focus { outline: none; border-color: #C6E000; }
+  td.rn-preview { max-width: 460px; overflow: hidden; text-overflow: ellipsis; color: #b7bbbd; }
+  .rn-textarea {
+    width: 100%;
+    min-height: 240px;
+    background: #1c1e1f;
+    color: #FBF9F2;
+    border: 1px solid #555;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+  .rn-textarea:focus { outline: none; border-color: #C6E000; }
+  .rn-editor-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 2px 18px;
+    font-size: 12.5px;
+    color: #9a9d9e;
+  }
+  #rn-save-status { color: #C6E000; }
 </style>
 </head>
 <body>
@@ -321,6 +357,58 @@
   </div>
 </div>
 
+<div id="report-nodes-view" class="submissions-wrap hidden">
+  <div class="sub-card">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <span class="logo-mark"><span class="lt">//timeback</span><span class="ll">lab</span></span>
+        <h1>Detailed report replies</h1>
+      </div>
+      <div class="sub-header-actions">
+        <span class="count" id="rn-count-label"></span>
+        <button type="button" id="rn-back-btn" class="btn-ghost">Back to console</button>
+        <button type="button" id="rn-logout-btn" class="btn-ghost">Log out</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" id="rn-group-btn" class="btn-ghost">Group by section</button>
+      <select id="rn-section-filter">
+        <option value="">All sections</option>
+        <option value="systems">Systems</option>
+        <option value="delegation">Delegation</option>
+        <option value="prioritisation">Prioritisation</option>
+        <option value="tech">Tech</option>
+      </select>
+      <select id="rn-role-filter">
+        <option value="">All roles</option>
+        <option value="boss">Boss</option>
+        <option value="lead">Lead</option>
+        <option value="office">Office</option>
+        <option value="field">Field</option>
+      </select>
+      <input type="text" id="rn-search" class="rn-search" placeholder="Search id or text...">
+    </div>
+
+    <div class="scroll-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Section</th>
+            <th>Role</th>
+            <th>Company size</th>
+            <th>Tier / question</th>
+            <th>Preview</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rn-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div id="modal-root"></div>
 
 <script>
@@ -330,12 +418,25 @@
   let sortField = 'created_at';
   let sortDir = 'desc';
 
+  let reportNodes = [];
+  let rnGroupBySection = false;
+  let rnSectionFilter = '';
+  let rnRoleFilter = '';
+  let rnSearch = '';
+
+  const RN_SECTION_LABELS = { systems: 'Systems', delegation: 'Delegation', prioritisation: 'Prioritisation', tech: 'Tech' };
+  const RN_SECTION_ORDER = ['systems', 'delegation', 'prioritisation', 'tech'];
+  const RN_ROLE_LABELS = { boss: 'Boss', lead: 'Lead', office: 'Office', field: 'Field' };
+  const RN_SIZE_LABELS = { solo: 'Solo / Micro', small: 'Small', medium: 'Medium / Large' };
+  const RN_TIER_LABELS = { trapped: 'Trapped', overloaded: 'Overloaded', stretched: 'Stretched', driver: "Driver's seat" };
+
   const ICONS = {
     clipboard: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"></rect><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"></path><path d="M9 11h6M9 15h6M9 7h6"></path></svg>',
     creditCard: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h4"></path></svg>',
     users: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
     userGear: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><circle cx="19" cy="16" r="2.5"></circle><path d="M19 12.5v1M19 18.5v1M15.9 14.2l.9.5M21.2 17.3l.9.5M15.9 17.8l.9-.5M21.2 14.7l.9-.5"></path></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M9 18l6-6-6-6"></path></svg>',
+    docEdit: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path><path d="M8 8h5M8 12h4"></path><path d="M17.5 3.5a1.8 1.8 0 0 1 2.5 2.5L15 11l-3 .8.8-3z"></path></svg>',
   };
 
   const MENU_ITEMS = [
@@ -344,6 +445,13 @@
       title: 'Timeback score submissions',
       desc: 'View all entries submitted into the system.',
       icon: ICONS.clipboard,
+      live: true,
+    },
+    {
+      id: 'report-nodes',
+      title: 'Manage detailed report replies',
+      desc: 'View and edit the detailed report content library.',
+      icon: ICONS.docEdit,
       live: true,
     },
     {
@@ -377,7 +485,7 @@
   }
 
   function showView(id) {
-    ['login-view', 'menu-view', 'submissions-view'].forEach(function (v) {
+    ['login-view', 'menu-view', 'submissions-view', 'report-nodes-view'].forEach(function (v) {
       document.getElementById(v).classList.toggle('hidden', v !== id);
     });
   }
@@ -403,6 +511,24 @@
       body: JSON.stringify({ submissionId: submissionId }),
     });
     if (!res.ok) throw new Error('Delete failed');
+    return res.json();
+  }
+
+  async function fetchReportNodes(password) {
+    const res = await fetch('/api/admin/report-nodes', {
+      headers: { 'X-Admin-Password': password },
+    });
+    if (!res.ok) throw new Error(res.status === 401 ? 'Wrong password' : 'Request failed');
+    return res.json();
+  }
+
+  async function updateReportNode(password, id, bodyText) {
+    const res = await fetch('/api/admin/report-nodes', {
+      method: 'PUT',
+      headers: { 'X-Admin-Password': password, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, body: bodyText }),
+    });
+    if (!res.ok) throw new Error('Save failed');
     return res.json();
   }
 
@@ -489,6 +615,140 @@
       html += sortedSubmissions(groups[name]).map(rowHtml).join('');
     });
     body.innerHTML = html;
+  }
+
+  function rnTierOrQuestion(n) {
+    if (n.node_type === 'summary') return RN_TIER_LABELS[n.tier] || n.tier || '';
+    return (n.question_id || '').toUpperCase();
+  }
+
+  function rnFilteredNodes() {
+    const q = rnSearch.trim().toLowerCase();
+    return reportNodes.filter(function (n) {
+      if (rnSectionFilter && n.section !== rnSectionFilter) return false;
+      if (rnRoleFilter && n.role !== rnRoleFilter) return false;
+      if (q) {
+        const inId = (n.id || '').toLowerCase().indexOf(q) !== -1;
+        const inBody = (n.body || '').toLowerCase().indexOf(q) !== -1;
+        if (!inId && !inBody) return false;
+      }
+      return true;
+    });
+  }
+
+  function rnRowHtml(n) {
+    const body = n.body || '';
+    const preview = body.length > 120 ? body.slice(0, 120) + '…' : body;
+    return (
+      '<tr>' +
+      '<td>' + escapeHtml(n.id) + '</td>' +
+      '<td>' + escapeHtml(RN_SECTION_LABELS[n.section] || n.section) + '</td>' +
+      '<td>' + escapeHtml(RN_ROLE_LABELS[n.role] || n.role) + '</td>' +
+      '<td>' + escapeHtml(RN_SIZE_LABELS[n.company_size] || n.company_size) + '</td>' +
+      '<td>' + escapeHtml(rnTierOrQuestion(n)) + '</td>' +
+      '<td class="rn-preview">' + escapeHtml(preview) + '</td>' +
+      '<td><button type="button" class="view-btn" data-rn-view="' + escapeHtml(n.id) + '">View</button></td>' +
+      '</tr>'
+    );
+  }
+
+  function renderReportNodes() {
+    const list = rnFilteredNodes();
+    document.getElementById('rn-count-label').textContent = list.length + ' of ' + reportNodes.length;
+    document.getElementById('rn-group-btn').classList.toggle('active', rnGroupBySection);
+    const body = document.getElementById('rn-table-body');
+
+    if (!rnGroupBySection) {
+      body.innerHTML = list.map(rnRowHtml).join('');
+      return;
+    }
+
+    let html = '';
+    RN_SECTION_ORDER.forEach(function (sec) {
+      const group = list.filter(function (n) { return n.section === sec; });
+      if (!group.length) return;
+      html += '<tr class="group-row"><td colspan="7">' + escapeHtml(RN_SECTION_LABELS[sec]) + ' (' + group.length + ')</td></tr>';
+      html += group.map(rnRowHtml).join('');
+    });
+    body.innerHTML = html;
+  }
+
+  function openReportNodeModal(id) {
+    const n = reportNodes.filter(function (x) { return x.id === id; })[0];
+    if (!n) return;
+
+    const field = function (label, value) {
+      return '<div class="modal-field"><dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(value) + '</dd></div>';
+    };
+    const updated = n.updated_at ? new Date(n.updated_at).toLocaleString() : 'Not edited yet';
+
+    const html =
+      '<div class="modal-overlay" id="rn-modal-overlay">' +
+      '<div class="modal-card">' +
+      '<h2>' + escapeHtml(n.label) + '</h2>' +
+
+      '<p class="modal-section-title">Reply details</p>' +
+      '<div class="modal-grid">' +
+      field('ID', n.id) +
+      field('Section', RN_SECTION_LABELS[n.section] || n.section) +
+      field('Role', RN_ROLE_LABELS[n.role] || n.role) +
+      field('Company size', RN_SIZE_LABELS[n.company_size] || n.company_size) +
+      field(n.node_type === 'summary' ? 'Tier' : 'Question', rnTierOrQuestion(n)) +
+      field('Last updated', updated) +
+      '</div>' +
+
+      '<hr class="modal-divider">' +
+
+      '<p class="modal-section-title">Reply text</p>' +
+      '<textarea id="rn-body-input" class="rn-textarea"></textarea>' +
+      '<div class="rn-editor-meta"><span id="rn-word-count"></span><span id="rn-save-status"></span></div>' +
+
+      '<div class="modal-actions">' +
+      '<button type="button" class="btn-ghost" id="rn-modal-close-btn">Close</button>' +
+      '<button type="button" class="btn-primary" id="rn-modal-save-btn">Save changes</button>' +
+      '</div>' +
+      '</div></div>';
+
+    document.getElementById('modal-root').innerHTML = html;
+
+    const textarea = document.getElementById('rn-body-input');
+    textarea.value = n.body || '';
+    const updateWc = function () {
+      const t = textarea.value.trim();
+      const words = t ? t.split(/\s+/).length : 0;
+      document.getElementById('rn-word-count').textContent = words + ' words';
+    };
+    updateWc();
+    textarea.addEventListener('input', function () {
+      updateWc();
+      document.getElementById('rn-save-status').textContent = '';
+    });
+
+    document.getElementById('rn-modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('rn-modal-overlay').addEventListener('click', function (e) {
+      if (e.target.id === 'rn-modal-overlay') closeModal();
+    });
+    document.getElementById('rn-modal-save-btn').addEventListener('click', async function () {
+      const pw = sessionStorage.getItem(PW_KEY);
+      const status = document.getElementById('rn-save-status');
+      const btn = this;
+      btn.disabled = true;
+      status.style.color = '#C6E000';
+      status.textContent = 'Saving...';
+      try {
+        const data = await updateReportNode(pw, id, textarea.value);
+        n.body = textarea.value;
+        n.word_count = data.word_count;
+        n.updated_at = data.updated_at;
+        status.textContent = 'Saved · ' + new Date(data.updated_at).toLocaleString();
+        renderReportNodes();
+      } catch (err) {
+        status.style.color = '#FF4081';
+        status.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
   function closeModal() {
@@ -596,6 +856,7 @@
   function logout() {
     sessionStorage.removeItem(PW_KEY);
     submissions = [];
+    reportNodes = [];
     showView('login-view');
   }
 
@@ -614,9 +875,19 @@
   document.getElementById('menu-grid').addEventListener('click', function (e) {
     const card = e.target.closest('.menu-card');
     if (!card || card.disabled) return;
-    if (card.getAttribute('data-id') === 'quiz-submissions') {
+    const id = card.getAttribute('data-id');
+    if (id === 'quiz-submissions') {
       renderRows();
       showView('submissions-view');
+    } else if (id === 'report-nodes') {
+      const pw = sessionStorage.getItem(PW_KEY);
+      fetchReportNodes(pw).then(function (data) {
+        reportNodes = data.nodes;
+        renderReportNodes();
+        showView('report-nodes-view');
+      }).catch(function (err) {
+        alert(err.message);
+      });
     }
   });
 
@@ -644,6 +915,35 @@
     const btn = e.target.closest('.view-btn');
     if (!btn) return;
     openModal(btn.getAttribute('data-view'));
+  });
+
+  document.getElementById('rn-back-btn').addEventListener('click', function () {
+    renderMenu();
+    showView('menu-view');
+  });
+  document.getElementById('rn-logout-btn').addEventListener('click', logout);
+
+  document.getElementById('rn-group-btn').addEventListener('click', function () {
+    rnGroupBySection = !rnGroupBySection;
+    renderReportNodes();
+  });
+  document.getElementById('rn-section-filter').addEventListener('change', function (e) {
+    rnSectionFilter = e.target.value;
+    renderReportNodes();
+  });
+  document.getElementById('rn-role-filter').addEventListener('change', function (e) {
+    rnRoleFilter = e.target.value;
+    renderReportNodes();
+  });
+  document.getElementById('rn-search').addEventListener('input', function (e) {
+    rnSearch = e.target.value;
+    renderReportNodes();
+  });
+
+  document.getElementById('rn-table-body').addEventListener('click', function (e) {
+    const btn = e.target.closest('.view-btn');
+    if (!btn) return;
+    openReportNodeModal(btn.getAttribute('data-rn-view'));
   });
 
   const savedPw = sessionStorage.getItem(PW_KEY);
