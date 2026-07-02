@@ -8,10 +8,14 @@
 - [x] Mobile responsive breakpoints added (980px tablet, 640px mobile)
 - [x] Mobile hamburger nav menu added (not in original design, needed for small screens)
 - [x] Local server verified — all assets resolve with 200
-- [ ] Visual QA in a real browser (desktop + mobile) — couldn't get a live screenshot in this session, needs manual check
+- [x] Favicon added (`images/favicon.png`, linked in `<head>`)
+- [x] Browser tab title set to "Timeback Lab"
+- [x] Nav width widened to match content column width
+- [x] Mobile hero padding fixed so content clears the floating nav
+- [x] Pushed to GitHub
+- [ ] Visual QA in a real browser (desktop + mobile) — needs manual check
 - [ ] CTA destinations decided (most buttons are placeholder `#` links, matching the source design)
 - [ ] Additional pages (About, Contact, etc.)
-- [ ] Pushed to GitHub
 - [ ] Cloudflare Pages connected
 - [ ] Custom domain (timebacklab.com) DNS configured
 
@@ -24,6 +28,31 @@
 - Added a mobile hamburger nav menu (not present in source design)
 - Preserved nav hide-on-scroll-down/show-on-scroll-up behaviour and the marquee auto-scroll animation from the original prototype's JS
 - Kept placeholder `#` links as-is for buttons not wired to a real destination in the source design, rather than inventing pages out of scope
+
+## 2026-07-02 — Post-launch polish + workflow decisions
+
+### Changes made
+- Added favicon (`images/favicon.png`) linked in `<head>` of `index.html`
+- Set browser tab title to "Timeback Lab" (was defaulting to the URL)
+- Widened nav pill to match the site's content column width (was narrower than content on wide screens)
+- Added extra top padding to hero section on mobile so the heading isn't hidden behind the fixed floating nav
+
+### Workflow decision: code is now the source of truth
+The homepage has been edited directly in code (nav behaviour, favicon, mobile fixes) and is now out of sync with the Claude Designer source file. **Do not re-export the homepage from Claude Designer** — it will overwrite these fixes.
+
+Going forward:
+- **Updates to existing pages** → edit the code directly (GitHub web editor, GitHub.dev, local VS Code, or Claude Code)
+- **New pages** → design in Claude Designer or describe to Claude Code; implement in code using the existing site structure, shared CSS, and brand palette. Drop any Designer exports into `_handoff/` as reference material (gitignored).
+- **Claude Designer** is now a mockup/reference tool only, not a build system.
+
+### Editing options (without a Claude Code session)
+| Task | Tool |
+|---|---|
+| Fix a typo / swap a link | GitHub web editor (pencil icon on any file) |
+| Multi-file edits | GitHub.dev — press `.` on the repo |
+| Larger changes with preview | VS Code locally, then `git push` |
+
+---
 
 ## Floating nav — confirmed against original spec
 The nav is a floating pill, `position: fixed`, centred via `translate(-50%, 0)`. Two scroll-driven behaviours, both ported faithfully from the original `handleScroll` logic in the design file:

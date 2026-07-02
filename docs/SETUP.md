@@ -58,3 +58,26 @@ Then open http://localhost:8731/index.html
 - **Home** (index.html) — built from the Claude Design "Timeback Homepage" handoff. Single page, five colour-blocked sections + footer.
 
 Built from a Claude Design handoff bundle. See `docs/PROGRESS.md` for build history.
+
+## Editing the site yourself (without Claude Code)
+
+**Small edits (text, links, colours):**
+1. Go to `github.com/thoredee/timebacklab-website`
+2. Click the file, then the pencil icon
+3. Edit and commit to `main` — Cloudflare Pages auto-deploys in ~60 seconds
+
+**Larger edits across multiple files:**
+- Press `.` on the GitHub repo to open GitHub.dev (VS Code in the browser)
+- Edit, commit, push — same auto-deploy
+
+**Local editing:**
+- Open the folder in VS Code, edit, `git push origin main`
+
+## Adding new pages
+
+The code is now the source of truth — do not re-export the homepage from Claude Designer (it will overwrite live fixes). For new pages:
+1. Design in Claude Designer or describe to Claude Code
+2. Implement using the existing nav, `css/style.css` variables, and brand palette
+3. Drop any Designer exports into `_handoff/` as reference (gitignored, not deployed)
+
+See `docs/PROGRESS.md` for the full workflow note.
