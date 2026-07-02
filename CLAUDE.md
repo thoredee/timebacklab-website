@@ -63,7 +63,8 @@ timebacklab-website/
   │   ├── SETUP.md
   │   ├── PROGRESS.md
   │   ├── report-nodes.md               Source content for all 309 report cells (seed + backup; D1 is the live source of truth)
-  │   └── report-content-admin-spec.md  Spec for the "Manage detailed report replies" admin content manager
+  │   ├── report-content-admin-spec.md  Spec for the "Manage detailed report replies" admin content manager
+  │   └── payment-report-access-spec.md Spec for Stripe checkout + magic-link paid report access (TO BUILD)
   ├── _handoff/                 Claude Design export — gitignored, reference only
   ├── .gitignore
   └── CLAUDE.md
@@ -142,11 +143,12 @@ Two breakpoints: `980px` (tablet — collapse to single column, 2-col footer/lab
 Most CTA buttons link to `#` — this matches the source design, which only wired up "Meet the time eaters" → `#problem`. No Contact, About, Blog, etc. pages exist yet. Wire these up once those pages are built or a real contact method (email/form) is decided.
 
 ## Next Steps
-1. **Report generator (needs thinking through before building).** Build the engine that turns a completed quiz submission into the personalised detailed report by pulling the matching `report_nodes` rows (section summaries by section×size×role×tier from each section's score band, plus the question nodes for each flagged leak). Open decisions first: output format (on-site HTML page vs downloadable PDF/doc), where it is triggered (likely the paid-report request flow), how score bands map to tiers per section, and how the finished report is stored/delivered. Content + storage are ready; this is the remaining phase. See `docs/report-content-admin-spec.md` and the Detailed Report Content Manager section above.
-2. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
-3. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
-4. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist
-5. Consider a CSV export or reporting view beyond the raw `admin.html` table, and a data retention/deletion policy for stored quiz submissions (relevant given the Legal/Privacy page commitments)
+1. **Paid report access — Stripe checkout + magic-link unlock (specced, TO BUILD).** The payment *gate* in front of the report generator: quiz-taker pays a fixed fee by card via Stripe (owner is merchant, money to owner's bank; Amex supported by default), a signature-verified Stripe webhook marks the `submissions` row paid and mints an unguessable `report_token`, and access is via a private **magic link** — **no user accounts** (data kept account-ready; accounts deferred until repeat purchases / group reports / subscriptions justify them). Decisions locked: Stripe (not a merchant-of-record), magic-link (not accounts), **one £ price + Stripe Adaptive Pricing** (local-currency *display* only, not true per-country pricing), global cards accepted (US/India work; Indian cards decline more under RBI rules); report **output format still TBD**. Additive `ALTER TABLE submissions` change + new `POST /api/checkout`, `POST /api/stripe-webhook`, `GET /api/report?token=` routes; two Worker secrets (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`). Full brief: `docs/payment-report-access-spec.md`.
+2. **Report generator (needs thinking through before building).** Build the engine that turns a completed quiz submission into the personalised detailed report by pulling the matching `report_nodes` rows (section summaries by section×size×role×tier from each section's score band, plus the question nodes for each flagged leak). Open decisions first: output format (on-site HTML page vs downloadable PDF/doc), where it is triggered (likely the paid-report request flow above), how score bands map to tiers per section, and how the finished report is stored/delivered. Content + storage are ready; this is the remaining phase. See `docs/report-content-admin-spec.md`, `docs/payment-report-access-spec.md`, and the Detailed Report Content Manager section above.
+3. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
+4. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
+5. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist
+6. Consider a CSV export or reporting view beyond the raw `admin.html` table, and a data retention/deletion policy for stored quiz submissions (relevant given the Legal/Privacy page commitments)
 
 ## Ongoing Record-Keeping
 Every time a change is built and pushed live, update `docs/PROGRESS.md` with a dated entry (what was built, why, and any open items) and update this CLAUDE.md if the change affects folder structure, known placeholders, or a durable rule future sessions need to know. This has been the practice since the quiz work began — check `docs/PROGRESS.md`'s dated entries for the ongoing history rather than re-deriving it from git log.
