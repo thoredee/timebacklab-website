@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     answers: {},
     companyName: '',
     email: '',
+    marketingOptIn: false,
   };
 
   function getBank() {
@@ -206,6 +207,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function goNext() {
     if (!canProceed()) return;
+    if (state.step === -1) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('marketingOptIn', state.marketingOptIn ? '1' : '0');
+      window.history.replaceState({}, '', 'quiz.html?' + params.toString());
+    }
     state.step = Math.min(6, state.step + 1);
     render();
     scrollTop();
@@ -228,8 +234,14 @@ document.addEventListener('DOMContentLoaded', function () {
     state.answers = {};
     state.companyName = '';
     state.email = '';
+    state.marketingOptIn = false;
     render();
     scrollTop();
+  }
+
+  function toggleMarketingOptIn() {
+    state.marketingOptIn = !state.marketingOptIn;
+    render();
   }
 
   function selectGating1(key) {
@@ -337,15 +349,26 @@ document.addEventListener('DOMContentLoaded', function () {
       '<input type="text" class="form-input" id="company-input" placeholder="The Timeback Lab Company" value="' + escapeHtml(state.companyName) + '">' +
       '</div>' +
       '<div class="form-field">' +
-      '<label class="form-label">Email address <span class="form-label-tag">(Required)</span></label>' +
+      '<label class="form-label">Email address <span class="form-label-tag">(Required so we can email you the results)</span></label>' +
       '<input type="email" class="form-input' + (emailError ? ' error' : '') + '" id="email-input" placeholder="you@company.com" value="' + escapeHtml(state.email) + '">' +
       (emailError ? '<div class="form-error">Please enter a valid email address</div>' : '') +
       '</div>' +
       '</form>' +
+      '<div class="marketing-checkbox-block">' +
+      '<button type="button" class="checkbox-row" data-action="toggle-marketing" aria-label="Toggle marketing opt-in">' +
+      '<svg class="checkbox-box' + (state.marketingOptIn ? ' checked' : '') + '" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="24" height="24" rx="6" ' + (state.marketingOptIn ? 'fill="#EE0072"' : 'fill="#FFD0DC" stroke="#26292A" stroke-width="2"') + '/>' +
+      (state.marketingOptIn ? '<path d="M8 12L11 15L16 8" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' : '') +
+      '</svg>' +
+      '<label class="checkbox-label">Yes, I\'d like occasional tips and toolkits on cutting operational noise, regaining control and finding the freedom to actually grow my business. If you don\'t like it, unsubscribe anytime.</label>' +
+      '</button>' +
+      '</div>' +
+      '<div class="consent-text">' +
+      'By clicking \'Let\'s go\', you agree to our <a href="#" class="consent-link">Terms &amp; Conditions</a> and acknowledge our <a href="#" class="consent-link">Privacy Policy</a>.' +
+      '</div>' +
       '</div>' +
       '</div>' +
       '<div class="intro-button-row">' +
-      '<a href="#" class="disclaimer-link">The fine print (privacy & terms)</a>' +
       '<button type="button" class="cta-button" data-action="next"' + (canProceed() ? '' : ' disabled') + '>Let\'s go</button>' +
       '</div>' +
       '</div>' +
@@ -468,6 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
     else if (action === 'next') goNext();
     else if (action === 'back') goBack();
     else if (action === 'restart') restart();
+    else if (action === 'toggle-marketing') toggleMarketingOptIn();
   });
 
   root.addEventListener('change', function (e) {
