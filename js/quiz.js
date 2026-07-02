@@ -125,10 +125,12 @@ document.addEventListener('DOMContentLoaded', function () {
   ];
 
   const state = {
-    step: 0,
+    step: -1,
     gating1: null,
     gating2: null,
     answers: {},
+    companyName: '',
+    email: '',
   };
 
   function getBank() {
@@ -147,8 +149,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return getBank().filter(function (q) { return q.category === cat; });
   }
 
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
   function canProceed() {
     const step = state.step;
+    if (step === -1) return isValidEmail(state.email);
     if (step === 0) return !!state.gating1;
     if (step === 1) return !!state.gating2;
     if (step >= 2 && step <= 5) {
@@ -205,16 +212,22 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function goBack() {
-    state.step = Math.max(0, state.step - 1);
+    if (state.step === 0) {
+      state.step = -1;
+    } else {
+      state.step = Math.max(-1, state.step - 1);
+    }
     render();
     scrollTop();
   }
 
   function restart() {
-    state.step = 0;
+    state.step = -1;
     state.gating1 = null;
     state.gating2 = null;
     state.answers = {};
+    state.companyName = '';
+    state.email = '';
     render();
     scrollTop();
   }
@@ -303,13 +316,49 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   }
 
+  function renderIntro() {
+    const emailError = state.email && !isValidEmail(state.email);
+
+    return (
+      '<section class="quiz-stage">' +
+      '<div class="quiz-card">' +
+      '<div class="quiz-progress-row">' +
+      '<div class="quiz-progress-label">Your progress</div>' +
+      '<div class="quiz-progress-track"><div class="quiz-progress-fill" style="width:4%"></div></div>' +
+      '</div>' +
+      '<div class="intro-content">' +
+      '<h1 class="intro-headline">Where\'s your time really going?</h1>' +
+      '<p class="intro-subtext">10 quick questions, less than 5 minutes. We\'ll name your #1 time leak and exactly what to do about it.</p>' +
+      '<div class="intro-form">' +
+      '<div class="intro-form-label">Before we begin, tell us about you</div>' +
+      '<form id="intro-form" class="intro-form-fields">' +
+      '<div class="form-field">' +
+      '<label class="form-label">Company name <span class="form-label-tag">(Optional)</span></label>' +
+      '<input type="text" class="form-input" id="company-input" placeholder="The Timeback Lab Company" value="' + escapeHtml(state.companyName) + '">' +
+      '</div>' +
+      '<div class="form-field">' +
+      '<label class="form-label">Email address <span class="form-label-tag">(Required)</span></label>' +
+      '<input type="email" class="form-input' + (emailError ? ' error' : '') + '" id="email-input" placeholder="you@company.com" value="' + escapeHtml(state.email) + '">' +
+      (emailError ? '<div class="form-error">Please enter a valid email address</div>' : '') +
+      '</div>' +
+      '</form>' +
+      '</div>' +
+      '</div>' +
+      '<div class="intro-button-row">' +
+      '<a href="#" class="disclaimer-link">The fine print (privacy & terms)</a>' +
+      '<button type="button" class="cta-button" data-action="next"' + (canProceed() ? '' : ' disabled') + '>Let\'s go</button>' +
+      '</div>' +
+      '</div>' +
+      '</section>'
+    );
+  }
+
   function renderQuizCard() {
     const step = state.step;
-    const totalSteps = 6;
-    const progressPercent = Math.round(((step + 1) / totalSteps) * 100);
+    const totalSteps = 7;
+    const progressPercent = Math.round(((step + 2) / totalSteps) * 100);
     const proceedable = canProceed();
     const nextLabel = step <= 1 ? 'Continue' : (step === 5 ? 'See my score' : 'Next section');
-    const backDisabled = step === 0;
 
     let body = '';
     if (step === 0) body = renderGating1();
@@ -320,12 +369,12 @@ document.addEventListener('DOMContentLoaded', function () {
       '<section class="quiz-stage">' +
       '<div class="quiz-card">' +
       '<div class="quiz-progress-row">' +
-      '<div class="quiz-progress-label">How much more</div>' +
+      '<div class="quiz-progress-label">Your progress</div>' +
       '<div class="quiz-progress-track"><div class="quiz-progress-fill" style="width:' + progressPercent + '%"></div></div>' +
       '</div>' +
       body +
       '<div class="quiz-nav-row">' +
-      '<button type="button" class="quiz-back-btn" data-action="back"' + (backDisabled ? ' disabled' : '') + '>Go back</button>' +
+      '<button type="button" class="quiz-back-btn" data-action="back">Go back</button>' +
       '<button type="button" class="quiz-next-btn" data-action="next"' + (proceedable ? '' : ' disabled') + '>' + escapeHtml(nextLabel) + '</button>' +
       '</div>' +
       '</div>' +
@@ -392,7 +441,21 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function render() {
-    root.innerHTML = state.step < 6 ? renderQuizCard() : renderResults();
+    if (state.step === -1) {
+      root.innerHTML = renderIntro();
+    } else if (state.step < 6) {
+      root.innerHTML = renderQuizCard();
+    } else {
+      root.innerHTML = renderResults();
+    }
+  }
+
+  function updateIntroForm() {
+    const companyInput = document.getElementById('company-input');
+    const emailInput = document.getElementById('email-input');
+    if (companyInput) state.companyName = companyInput.value;
+    if (emailInput) state.email = emailInput.value;
+    render();
   }
 
   root.addEventListener('click', function (e) {
@@ -405,6 +468,18 @@ document.addEventListener('DOMContentLoaded', function () {
     else if (action === 'next') goNext();
     else if (action === 'back') goBack();
     else if (action === 'restart') restart();
+  });
+
+  root.addEventListener('change', function (e) {
+    if (e.target.id === 'company-input' || e.target.id === 'email-input') {
+      updateIntroForm();
+    }
+  });
+
+  root.addEventListener('input', function (e) {
+    if (e.target.id === 'email-input') {
+      updateIntroForm();
+    }
   });
 
   render();

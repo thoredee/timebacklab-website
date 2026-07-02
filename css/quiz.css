@@ -7,6 +7,149 @@ body.quiz-body {
 }
 
 /* ============================================
+   INTRO PAGE
+   ============================================ */
+
+.intro-content {
+  margin-bottom: 44px;
+}
+
+.intro-headline {
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: #8A0028;
+  margin-bottom: 16px;
+}
+
+.intro-subtext {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #000000;
+  max-width: 560px;
+  margin-bottom: 44px;
+}
+
+.intro-form {
+  margin-top: 48px;
+}
+
+.intro-form-label {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #26292A;
+  margin-bottom: 32px;
+}
+
+.intro-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 56px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #26292A;
+}
+
+.form-label-tag {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(38, 41, 42, 0.45);
+}
+
+.form-input {
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: #FFD0DC;
+  border: 2px solid transparent;
+  color: #26292A;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input::placeholder {
+  color: rgba(38, 41, 42, 0.5);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #EE0072;
+  box-shadow: 6px 6px 0 #000000;
+}
+
+.form-input.error {
+  border-color: #EE0072;
+  box-shadow: 6px 6px 0 #EE0072;
+}
+
+.form-error {
+  font-size: 13px;
+  font-weight: 700;
+  color: #CC0024;
+  padding-left: 20px;
+}
+
+.intro-button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.disclaimer-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #26292A;
+  background: #CCCCCC;
+  padding: 14px 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease;
+}
+
+.disclaimer-link:hover {
+  box-shadow: 6px 6px 0 #EE0072;
+}
+
+.cta-button {
+  background: #480078;
+  color: #DDD0FF;
+  border: none;
+  padding: 16px 36px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.cta-button:hover:not([disabled]) {
+  transform: translateY(-2px);
+}
+
+.cta-button[disabled] {
+  background: #DDD0FF;
+  color: #480078;
+  cursor: not-allowed;
+}
+
+/* ============================================
    QUIZ STAGE
    ============================================ */
 
@@ -245,7 +388,7 @@ body.quiz-body {
 }
 
 .results-headline {
-  font-size: clamp(38px, 5vw, 64px);
+  font-size: clamp(40px, 6.5vw, 88px);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 0.98;
@@ -484,6 +627,19 @@ body.quiz-body {
     border-radius: 22px;
   }
 
+  .intro-button-row {
+    flex-direction: column;
+  }
+
+  .cta-button {
+    width: 100%;
+  }
+
+  .disclaimer-link {
+    width: 100%;
+    text-align: center;
+  }
+
   .role-grid {
     grid-template-columns: 1fr;
   }
@@ -530,6 +686,37 @@ body.quiz-body {
 
   .quiz-card {
     padding: 32px 22px;
+  }
+
+  .intro-headline {
+    font-size: clamp(24px, 5vw, 30px);
+  }
+
+  .intro-subtext {
+    font-size: 15px;
+  }
+
+  .intro-form-fields {
+    gap: 24px;
+  }
+
+  .form-label {
+    font-size: 16px;
+  }
+
+  .form-input {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .disclaimer-link {
+    font-size: 11px;
+    padding: 12px 16px;
+  }
+
+  .cta-button {
+    padding: 14px 28px;
+    font-size: 14px;
   }
 
   .gating-grid {
