@@ -105,7 +105,7 @@ body.quiz-body {
 
 .intro-button-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
 }
@@ -172,6 +172,12 @@ body.quiz-body {
   width: 24px;
   height: 24px;
   margin-top: 2px;
+  border-radius: 6px;
+  transition: box-shadow 0.15s ease;
+}
+
+.checkbox-box.checked {
+  box-shadow: 6px 6px 0 #000000;
 }
 
 .checkbox-label {
