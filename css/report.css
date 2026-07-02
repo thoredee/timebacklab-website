@@ -88,7 +88,10 @@
 
 /* Body */
 .report-body {
-  background: #F5F5F5;
+  background: #FBF9F2;
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(198, 224, 0, 0.10), transparent 42%),
+    radial-gradient(circle at 100% 12%, rgba(72, 0, 120, 0.06), transparent 40%);
   padding: 90px 64px 120px;
 }
 
@@ -146,10 +149,30 @@
   margin-bottom: 18px;
 }
 
+/* Headline + overall story, echoed from the purple results screen */
+.report-headline {
+  font-size: clamp(30px, 4.4vw, 48px);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  color: #DDD0FF;
+  margin: 6px 0 18px;
+}
+
+.report-narrative {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #EBE2FF;
+  max-width: 640px;
+  margin-bottom: 22px;
+}
+
 .report-leak {
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.6;
   color: #F3EEFF;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding-top: 18px;
 }
 
 .report-leak strong {
@@ -158,43 +181,73 @@
 
 .report-scorebox {
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 18px;
-  padding: 24px 32px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
 }
 
-.report-score-number {
-  font-size: 56px;
+/* Circular score gauge (mirrors the quiz results gauge) */
+.report-gauge {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.report-gauge svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.report-gauge-track {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 14;
+}
+
+.report-gauge-fill {
+  stroke: #C6E000;
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+
+.report-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-gauge-num {
+  font-size: 52px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: #C6E000;
+  color: #FFFFFF;
 }
 
-.report-score-label {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+.report-gauge-cap {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #C8B4EE;
-  margin-top: 8px;
+  color: rgba(221, 208, 255, 0.85);
+  margin-top: 10px;
 }
 
 .report-tier-badge {
   display: inline-block;
-  margin-top: 16px;
   background: #DDD0FF;
   color: #480078;
   font-size: 14px;
   font-weight: 700;
   border-radius: 999px;
-  padding: 6px 16px;
+  padding: 7px 18px;
 }
 
-/* Section blocks */
-.report-section-block {
+/* Priority-order diagram */
+.report-priority-card {
   background: #FFFFFF;
   border: 1px solid #ECECEC;
   border-radius: 20px;
@@ -202,9 +255,144 @@
   margin-bottom: 28px;
 }
 
+.report-priority-head h3 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #480078;
+  margin-bottom: 8px;
+}
+
+.report-priority-head p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(37, 37, 37, 0.6);
+  max-width: 640px;
+  margin-bottom: 30px;
+}
+
+.priority-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.priority-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.priority-rank {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #F0EDF6;
+  color: #6a4b8f;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.priority-row.is-top .priority-rank {
+  background: #480078;
+  color: #C6E000;
+}
+
+.priority-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.priority-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #26292A;
+  margin-bottom: 9px;
+}
+
+.priority-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: #EE0072;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.priority-track {
+  height: 14px;
+  background: #F0EDF3;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.priority-fill {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 6px;
+  transition: width 0.6s ease;
+}
+
+.priority-value {
+  flex-shrink: 0;
+  width: 54px;
+  text-align: right;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #26292A;
+}
+
+.priority-value span {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(37, 37, 37, 0.5);
+  margin-left: 1px;
+}
+
+/* Section blocks */
+.report-section-block {
+  --accent: #480078;
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #ECECEC;
+  border-radius: 20px;
+  padding: 40px 44px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+/* Coloured accent strip down the left edge, per leak area */
+.report-section-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 6px;
+  background: var(--accent);
+}
+
 .report-section-block.is-leak {
   border-color: #EE0072;
   box-shadow: 0 0 0 2px rgba(238, 0, 114, 0.12);
+}
+
+.section-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 .report-section-head {
@@ -267,9 +455,23 @@
   margin-top: 12px;
 }
 
-/* Findings (flagged questions) */
+/* What this means for you — the individual answer responses */
+.report-what {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid #F0EDF3;
+}
+
+.report-what-head {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a4b8f;
+  margin-bottom: 20px;
+}
+
 .report-findings {
-  margin-top: 28px;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -277,29 +479,7 @@
 
 .report-finding {
   border-left: 3px solid #C6E000;
-  padding: 4px 0 4px 22px;
-}
-
-.report-finding-q {
-  font-size: 16px;
-  font-weight: 700;
-  color: #26292A;
-  line-height: 1.5;
-  margin-bottom: 10px;
-}
-
-.report-finding-answer {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: #8a2d68;
-  background: #FCE4F1;
-  border-radius: 999px;
-  padding: 3px 10px;
-  margin-left: 6px;
-  vertical-align: middle;
+  padding: 2px 0 2px 22px;
 }
 
 .report-finding-body {
@@ -356,12 +536,19 @@
    ============================================ */
 @media (max-width: 900px) {
   .report-topcard {
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: flex-start;
   }
 
   .report-scorebox {
-    align-self: stretch;
+    align-self: center;
+    flex-direction: row;
+    gap: 22px;
+  }
+
+  .report-gauge {
+    width: 150px;
+    height: 150px;
   }
 }
 
@@ -390,8 +577,27 @@
     padding: 32px 26px;
   }
 
+  .report-priority-card {
+    padding: 30px 24px;
+  }
+
+  .priority-row {
+    gap: 12px;
+  }
+
+  .priority-rank {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .priority-value {
+    width: 40px;
+    font-size: 18px;
+  }
+
   .report-section-block {
-    padding: 30px 26px;
+    padding: 30px 26px 30px 30px;
   }
 
   .report-section-head {
