@@ -1,6 +1,4 @@
-export async function onRequestGet(context) {
-  const { request, env } = context;
-
+export async function handleAdminSubmissions(request, env) {
   const password = request.headers.get('X-Admin-Password') || '';
   if (!env.ADMIN_PASSWORD || password !== env.ADMIN_PASSWORD) {
     return new Response(JSON.stringify({ ok: false, error: 'Unauthorized' }), { status: 401 });

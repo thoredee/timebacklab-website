@@ -2,9 +2,7 @@ function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export async function onRequestPost(context) {
-  const { request, env } = context;
-
+export async function handleSubmit(request, env) {
   let body;
   try {
     body = await request.json();
@@ -22,11 +20,13 @@ export async function onRequestPost(context) {
   const cf = request.cf || {};
   const ip = request.headers.get('CF-Connecting-IP') || '';
   const userAgent = request.headers.get('User-Agent') || '';
+  const submissionId = crypto.randomUUID();
 
   const stmt = env.DB.prepare(
-    'INSERT INTO submissions (created_at, company_name, email, marketing_opt_in, business_size, role, score_percent, tier_key, tier_name, leak_category, answers_json, ip_address, country, region, city, timezone, isp, asn, colo, user_agent) ' +
-    'VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)'
+    'INSERT INTO submissions (submission_id, created_at, company_name, email, marketing_opt_in, business_size, role, score_percent, tier_key, tier_name, leak_category, answers_json, ip_address, country, region, city, timezone, isp, asn, colo, user_agent) ' +
+    'VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21)'
   ).bind(
+    submissionId,
     new Date().toISOString(),
     body.companyName || '',
     body.email,
@@ -51,7 +51,7 @@ export async function onRequestPost(context) {
 
   await stmt.run();
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify({ ok: true, submissionId: submissionId }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

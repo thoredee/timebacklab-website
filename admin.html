@@ -78,6 +78,7 @@
     <table>
       <thead>
         <tr>
+          <th>Submission ID</th>
           <th>Date</th>
           <th>Company</th>
           <th>Email</th>
@@ -132,6 +133,7 @@
       const answersId = 'answers-' + s.id;
       return (
         '<tr>' +
+        '<td>' + escapeHtml(s.submission_id) + '</td>' +
         '<td>' + escapeHtml(date) + '</td>' +
         '<td>' + escapeHtml(s.company_name) + '</td>' +
         '<td>' + escapeHtml(s.email) + '</td>' +
