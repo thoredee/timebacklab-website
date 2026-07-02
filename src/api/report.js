@@ -123,7 +123,7 @@ export async function handleReport(request, env) {
     const placeholders = allIds.map(function (_, i) { return '?' + (i + 1); }).join(', ');
     const res = await env.DB.prepare(
       'SELECT id, body FROM report_nodes WHERE id IN (' + placeholders + ')'
-    ).bind.apply(null, allIds).all();
+    ).bind(...allIds).all();
     (res.results || []).forEach(function (n) { nodeMap[n.id] = n.body; });
   }
 
