@@ -31,14 +31,17 @@ git config user.name "Thore Donner"
 ```
 timebacklab-website/
   index.html
+  quiz.html
   css/
     style.css
+    quiz.css
   js/
     main.js
+    quiz.js
   images/
     marquee-team.jpg, marquee-coffee.jpg, marquee-education.jpg,
     marquee-craft.jpg, marquee-florist.jpg, time-monster.webp,
-    friction-collage.webp, cupcake.webp
+    friction-collage.webp, cupcake.webp, quiz-report-photo.webp
   docs/
     SETUP.md
     PROGRESS.md
@@ -52,9 +55,10 @@ Static site, no build step. Serve it with any static server, e.g.:
 ```bash
 python -m http.server 8731
 ```
-Then open http://localhost:8731/index.html
+Then open http://localhost:8731/index.html or http://localhost:8731/quiz.html
 
 ## Pages
 - **Home** (index.html) — built from the Claude Design "Timeback Homepage" handoff. Single page, five colour-blocked sections + footer.
+- **Quiz** (quiz.html) — Timeback Score adaptive diagnostic (10 questions, gated by business size/role). Client-side state machine with tier-based results. Linked from homepage's "Start your Timeback Score" button.
 
-Built from a Claude Design handoff bundle. See `docs/PROGRESS.md` for build history.
+Built from Claude Design handoff bundles. See `docs/PROGRESS.md` for build history.
