@@ -78,6 +78,8 @@ Every completed quiz POSTs its full results to `/api/submit` (fired once, from `
 
 Results are viewed via `admin.html`, a password-gated page (not linked from site nav, `noindex` + `robots.txt` disallow) that sends the password as an `X-Admin-Password` header to `GET /api/admin/submissions` (`src/api/admin-submissions.js`), checked against the `ADMIN_PASSWORD` secret set in the Cloudflare dashboard (Settings → Variables and Secrets → Encrypt) — never stored in the repo.
 
+`admin.html` is a three-view app (login → console menu → data view), built as a scalable shell for future admin areas: after login, a menu card lists admin sections as icon card-buttons (`MENU_ITEMS` array in the page's script) — only **Timeback score submissions** is live today; **Paid requests for diagnostic reports**, **Group diagnostic reports**, and **Customer account management** are placeholder entries marked "Not live" pending future build-out. To add a new live admin area later: add an entry to `MENU_ITEMS` and a branch in the menu click handler. The submissions data view is a wide card with grouping (by company) and per-field sorting, and a "View" button per row opens a detail modal (submission/company/location fields, then the full question-by-question answers) with **Close** and **Delete record** actions — delete calls `DELETE /api/admin/submissions` (also in `src/api/admin-submissions.js`, same password gate, deletes by `submission_id`).
+
 See the Cloudflare Configuration section above for the Workers-platform quirks (bindings, `.html` URL stripping, no `wrangler` CLI locally) that shaped how this had to be built, and `docs/PROGRESS.md`'s 2026-07-02 entry for the full build/debugging story.
 
 ## Legal Page (`legal.html`)
