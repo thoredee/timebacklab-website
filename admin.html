@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Quiz Submissions — Admin</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #26292A;
+    color: #FBF9F2;
+    margin: 0;
+    padding: 32px;
+  }
+  h1 { font-size: 22px; margin: 0 0 20px; }
+  .login-box {
+    max-width: 360px;
+    margin: 80px auto;
+    background: #34383a;
+    padding: 28px;
+    border-radius: 12px;
+  }
+  .login-box label { display: block; margin-bottom: 8px; font-size: 14px; }
+  .login-box input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #1c1e1f;
+    color: #FBF9F2;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .login-box button, .toolbar button {
+    background: #C6E000;
+    color: #26292A;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .error { color: #FF4081; font-size: 13px; margin-bottom: 10px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .count { font-size: 14px; color: #C8B4EE; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; background: #1c1e1f; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #3a3d3e; white-space: nowrap; }
+  th { background: #34383a; position: sticky; top: 0; }
+  tr:hover { background: #2c2f30; }
+  .scroll-wrap { overflow: auto; max-height: 80vh; border-radius: 8px; }
+  .answers-btn { background: none; border: 1px solid #666; color: #C8B4EE; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
+  .hidden { display: none; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; background: #1c1e1f; padding: 12px; border-radius: 8px; max-width: 600px; }
+</style>
+</head>
+<body>
+
+<div id="login-view" class="login-box">
+  <h1>Admin login</h1>
+  <div id="login-error" class="error hidden"></div>
+  <label for="password-input">Password</label>
+  <input type="password" id="password-input" placeholder="Enter admin password">
+  <button type="button" id="login-btn">View submissions</button>
+</div>
+
+<div id="data-view" class="hidden">
+  <div class="toolbar">
+    <h1>Quiz submissions</h1>
+    <div>
+      <span class="count" id="count-label"></span>
+      <button type="button" id="logout-btn" style="margin-left:16px;">Log out</button>
+    </div>
+  </div>
+  <div class="scroll-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Company</th>
+          <th>Email</th>
+          <th>Marketing OK</th>
+          <th>Business size</th>
+          <th>Role</th>
+          <th>Score</th>
+          <th>Tier</th>
+          <th>Leak</th>
+          <th>Country</th>
+          <th>Region</th>
+          <th>City</th>
+          <th>ISP</th>
+          <th>IP</th>
+          <th>Answers</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const PW_KEY = 'tbl_admin_pw';
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  async function fetchSubmissions(password) {
+    const res = await fetch('/api/admin/submissions', {
+      headers: { 'X-Admin-Password': password },
+    });
+    if (!res.ok) throw new Error(res.status === 401 ? 'Wrong password' : 'Request failed');
+    return res.json();
+  }
+
+  function renderRows(submissions) {
+    const body = document.getElementById('table-body');
+    document.getElementById('count-label').textContent = submissions.length + ' total';
+    body.innerHTML = submissions.map(function (s) {
+      const date = s.created_at ? new Date(s.created_at).toLocaleString() : '';
+      const answersId = 'answers-' + s.id;
+      return (
+        '<tr>' +
+        '<td>' + escapeHtml(date) + '</td>' +
+        '<td>' + escapeHtml(s.company_name) + '</td>' +
+        '<td>' + escapeHtml(s.email) + '</td>' +
+        '<td>' + (s.marketing_opt_in ? 'Yes' : 'No') + '</td>' +
+        '<td>' + escapeHtml(s.business_size) + '</td>' +
+        '<td>' + escapeHtml(s.role) + '</td>' +
+        '<td>' + escapeHtml(s.score_percent) + '%</td>' +
+        '<td>' + escapeHtml(s.tier_name) + '</td>' +
+        '<td>' + escapeHtml(s.leak_category) + '</td>' +
+        '<td>' + escapeHtml(s.country) + '</td>' +
+        '<td>' + escapeHtml(s.region) + '</td>' +
+        '<td>' + escapeHtml(s.city) + '</td>' +
+        '<td>' + escapeHtml(s.isp) + '</td>' +
+        '<td>' + escapeHtml(s.ip_address) + '</td>' +
+        '<td><button type="button" class="answers-btn" data-target="' + answersId + '">View</button>' +
+        '<pre id="' + answersId + '" class="hidden">' + escapeHtml(JSON.stringify(JSON.parse(s.answers_json || '[]'), null, 2)) + '</pre></td>' +
+        '</tr>'
+      );
+    }).join('');
+  }
+
+  async function login(password) {
+    try {
+      const data = await fetchSubmissions(password);
+      sessionStorage.setItem(PW_KEY, password);
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('data-view').classList.remove('hidden');
+      renderRows(data.submissions);
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  document.getElementById('login-btn').addEventListener('click', function () {
+    const pw = document.getElementById('password-input').value;
+    login(pw);
+  });
+
+  document.getElementById('password-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('login-btn').click();
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function () {
+    sessionStorage.removeItem(PW_KEY);
+    document.getElementById('data-view').classList.add('hidden');
+    document.getElementById('login-view').classList.remove('hidden');
+  });
+
+  document.getElementById('table-body').addEventListener('click', function (e) {
+    const btn = e.target.closest('.answers-btn');
+    if (!btn) return;
+    document.getElementById(btn.getAttribute('data-target')).classList.toggle('hidden');
+  });
+
+  const savedPw = sessionStorage.getItem(PW_KEY);
+  if (savedPw) login(savedPw);
+</script>
+
+</body>
+</html>

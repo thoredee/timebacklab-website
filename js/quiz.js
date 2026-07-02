@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
     companyName: '',
     email: '',
     marketingOptIn: false,
+    submitted: false,
   };
 
   function getBank() {
@@ -235,8 +236,49 @@ document.addEventListener('DOMContentLoaded', function () {
     state.companyName = '';
     state.email = '';
     state.marketingOptIn = false;
+    state.submitted = false;
     render();
     scrollTop();
+  }
+
+  function submitResults() {
+    if (state.submitted) return;
+    state.submitted = true;
+
+    const result = computeScore();
+    const bank = getBank();
+    const answers = bank.map(function (q) {
+      const value = state.answers[q.id];
+      const option = SCALE_OPTIONS.filter(function (o) { return o.value === value; })[0];
+      return {
+        id: q.id,
+        category: q.category,
+        question: q.question,
+        value: value,
+        label: option ? option.title : null,
+      };
+    });
+
+    const payload = {
+      companyName: state.companyName,
+      email: state.email,
+      marketingOptIn: state.marketingOptIn,
+      businessSize: state.gating1,
+      role: state.gating2,
+      scorePercent: 100 - result.percent,
+      tierKey: result.tier.key,
+      tierName: result.tier.name,
+      leakCategory: result.leakCat,
+      answers: answers,
+    };
+
+    fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(function () {
+      // Silently ignore network errors; the result still renders for the user.
+    });
   }
 
   function toggleMarketingOptIn() {
@@ -470,6 +512,7 @@ document.addEventListener('DOMContentLoaded', function () {
       root.innerHTML = renderQuizCard();
     } else {
       root.innerHTML = renderResults();
+      submitResults();
     }
   }
 
