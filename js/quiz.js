@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '<div class="marketing-checkbox-block">' +
       '<button type="button" class="checkbox-row" data-action="toggle-marketing" aria-label="Toggle marketing opt-in">' +
       '<svg class="checkbox-box' + (state.marketingOptIn ? ' checked' : '') + '" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="24" height="24" rx="6" ' + (state.marketingOptIn ? 'fill="#EE0072" stroke="#EE0072" stroke-width="2"' : 'fill="#FFD0DC" stroke="#26292A" stroke-width="2"') + '/>' +
+      '<rect width="24" height="24" rx="6" ' + (state.marketingOptIn ? 'fill="#EE0072" stroke="#EE0072" stroke-width="2"' : 'fill="#FFD0DC" stroke="#26292A" stroke-width="3"') + '/>' +
       (state.marketingOptIn ? '<path d="M8 12L11 15L16 8" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' : '') +
       '</svg>' +
       '<label class="checkbox-label">Yes, I\'d like occasional tips and toolkits on cutting operational noise, regaining control and finding the freedom to actually grow my business. If you don\'t like it, unsubscribe anytime.</label>' +
