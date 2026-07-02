@@ -52,3 +52,54 @@ The nav is a floating pill, `position: fixed`, centred via `translate(-50%, 0)`.
 - Persist `marketingOptIn` server-side against lead record (no backend in this prototype)
 - Replace placeholder `#` links with real Terms & Conditions and Privacy Policy URLs
 - Confirm legal approval for "implied consent on click" vs. separate required checkbox
+
+## 2026-07-02 — Quiz content & scoring logic reviewed (docs, no code changes)
+- Compiled all 40 quiz questions (`js/quiz.js`), grouped by role/company type and category, plus all 4 result tiers and the full scoring logic, into a Google Doc for review: [Timeback Score Quiz — Questions, Results Logic & Scoring Review](https://docs.google.com/document/d/1qNuX7V2gWhFyLYTPv6uDJ0MX2ynkwBxnXwuNaNtGg2c/edit)
+- No code was changed in this pass — documentation/review only.
+
+### Issues flagged for follow-up (from the review doc)
+- **Business size (Gate 1) currently has no effect.** It's asked and stored in `state.gating1` but never read anywhere else — only role (Gate 2) selects the question bank (`QUESTION_BANKS` in `js/quiz.js`). Decide whether to wire it into question selection/copy/benchmarking, or drop the question.
+- **Displayed "Timeback Score" is inverted from the internal tier-health score.** `computeScore()` derives `percent` (0–100, high = healthy operations) to pick the tier, then shows `100 - percent` as the headline "Timeback Score" / "time you could recover." So a high displayed number actually means worse operations. Intentional marketing framing, but worth user-testing since it can read as "higher score = better" at a glance.
+- **Leak-category tie-break always favours Systems** when two categories have equal (or near-equal) averages, due to category order + strict less-than comparison in `computeScore()`.
+- **All quiz-results CTA buttons and "Order your report" are still placeholder `#` links** — not yet wired to booking pages, contact forms, or a paid-report flow.
+- **No quiz results are persisted anywhere** (no DB/CRM/sheet integration) — consistent with existing `CLAUDE.md` note under "Timeback Score Quiz."
+
+## 2026-07-02 — Quiz intro page implementation (redesign after handoff review)
+Built new intro page per `Timeback Score Quiz - Intro.dc.html` handoff (replaces checkbox/consent approach from earlier session):
+
+**Form & Validation**
+- Optional company name field (text input, pink background)
+- Required email address field (regex validated on keystroke: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`)
+- "Let's go" button disabled until email is valid; error message shown in Status Red (#CC0024)
+- Form state preserved in `state` object: `companyName`, `email`
+
+**UI & Styling**
+- Intro page styled to match quiz card system: cyan stage, lime card, burgundy headline
+- "Your progress" label on progress bar (4% filled as "just starting" indicator)
+- Form labels sized to match quiz option-card titles (18px/800)
+- Inputs styled like quiz option cards (pink #FFD0DC, rounded, magenta border on error)
+- "The fine print (privacy & terms)" link: mono chip on left, "Let's go" button on right (stacked on mobile)
+
+**Navigation & State Machine**
+- Intro is step -1 (before gating question 0)
+- Back button on first quiz question (step 0) navigates to intro
+- Progress percentages recalculated: 7 total steps (4%, 15%, 27%, 40%, 53%, 67%, 85%, 100%)
+- Progress bar label updated everywhere: "Your progress" (was "How much more")
+- Email/company passed as URL params to quiz (e.g., `?email=...&company=...`) for future CRM integration
+
+**Mobile Responsive**
+- Buttons stack vertically on tablet (≤980px) and mobile (≤640px)
+- Form scales appropriately: smaller fonts, tighter spacing, full-width inputs
+- Footer visible on intro page (hidden on quiz steps 0-5, shown on results)
+
+**Testing**
+- Form validation works (button disabled on invalid email, enabled on valid)
+- Navigation flow: intro → quiz question 1 → back to intro (state preserved)
+- Error state: red border + error message clears when email becomes valid
+- Mobile viewport (375px): responsive layout, no console errors
+- Commit: `4a8f392` pushed and auto-deployed to https://timebacklab-website.pages.dev/quiz.html
+
+**Open items**
+- "The fine print" link currently `href="#"` — wire to privacy/terms page when available
+- Email/company params not yet consumed by quiz (ready for backend/CRM integration)
+- No persistence (client-side only)

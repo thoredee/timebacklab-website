@@ -59,6 +59,12 @@ Then open http://localhost:8731/index.html or http://localhost:8731/quiz.html
 
 ## Pages
 - **Home** (index.html) — built from the Claude Design "Timeback Homepage" handoff. Single page, five colour-blocked sections + footer.
-- **Quiz** (quiz.html) — Timeback Score adaptive diagnostic (10 questions, gated by business size/role). Client-side state machine with tier-based results. Linked from homepage's "Start your Timeback Score" button.
+- **Quiz** (quiz.html) — Timeback Score adaptive diagnostic
+  - **Intro page** (step -1): Email gating form with optional company name capture. Progress bar shows "Your progress" at 4%.
+  - **Gating questions** (steps 0–1): Business size ("What's the size of your business?") → Role ("What's your role, day to day?"). Selects the question bank for the user's persona.
+  - **Category questions** (steps 2–5): 10 role-specific questions grouped into 4 categories (Systems, Delegation, Prioritisation, Tech). Progress bar advances from 15% to 85%.
+  - **Results** (step 6): Tier-based outcome (Trapped/Overloaded/Stretched/In the driver's seat) with score gauge, top time leak, and upsell section. Progress at 100%.
+  - Client-side state machine with no persistence (ready for CRM/backend integration when available).
+  - Linked from homepage's "Start your Timeback Score" button.
 
-Built from Claude Design handoff bundles. See `docs/PROGRESS.md` for build history.
+Built from Claude Design handoff bundles. See `docs/PROGRESS.md` for detailed build history and open items.
