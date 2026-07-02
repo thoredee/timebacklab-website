@@ -121,3 +121,9 @@ Built `legal.html` + `css/legal.css` from the Claude Design handoff (`Timeback L
 **Open items**
 - Cookies and Compliance footer links still placeholder `#` — no such pages/policies exist yet
 - No consent-management/cookie-banner implementation — out of scope for this pass, handoff didn't call for one
+
+## 2026-07-02 — Quiz intro page: fixed button alignment and checkbox selected style
+User flagged two visual bugs against a reference screenshot:
+- **"Let's go" button was left-aligned instead of right-aligned.** `.intro-button-row` used `justify-content: space-between`, a leftover from an earlier layout that had a second element (the "fine print" link) in the row — with only the button left as a sole flex child, `space-between` pins it to the start. Changed to `justify-content: flex-end` (`css/quiz.css`).
+- **Checked marketing opt-in checkbox didn't match the site's "selected" look and feel.** The quiz's answer buttons use a pink fill + `2px` border in the same colour + `6px 6px 0 #000` black offset shadow when selected (`.option-card.selected` in `css/quiz.css`). The checkbox's checked state only had a flat pink fill and a black checkmark — no shadow. Updated `js/quiz.js` to add a matching `stroke="#EE0072"` border and a white checkmark, and added `.checkbox-box.checked { box-shadow: 6px 6px 0 #000000; }` in `css/quiz.css` to bring in the offset-shadow treatment.
+- Verified both fixes live via the browser preview (computed styles + DOM inspection, since screenshot capture was unavailable this session) before pushing. Commit `7e28a08`, pushed and auto-deployed.
