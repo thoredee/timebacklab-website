@@ -10,5 +10,12 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "timebacklab-quiz",
+      "database_id": "2300801d-c8a2-432c-b0cf-26d336782b75"
+    }
   ]
 }
