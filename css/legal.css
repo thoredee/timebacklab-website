@@ -1,0 +1,139 @@
+/* ============================================
+   Legal page — hero + body
+   ============================================ */
+
+.legal-hero {
+  background: #C6E000;
+  padding: 170px 64px 90px;
+}
+
+.legal-hero-inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 64px;
+}
+
+.legal-hero h1 {
+  font-size: clamp(40px, 6.5vw, 88px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: #4A4800;
+  margin-bottom: 32px;
+}
+
+.legal-hero p {
+  font-size: 18px;
+  line-height: 1.7;
+  font-weight: 400;
+  color: #4A4800;
+  max-width: 760px;
+}
+
+.legal-body {
+  background: #F5F5F5;
+  padding: 110px 64px;
+}
+
+.legal-body-inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 96px;
+}
+
+.legal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.legal-section h2 {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #480078;
+}
+
+.legal-updated,
+.legal-lead {
+  font-size: 17px;
+  line-height: 1.8;
+  font-weight: 400;
+  color: rgba(37, 37, 37, 0.78);
+}
+
+.legal-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legal-sub h3 {
+  font-size: 19px;
+  font-weight: 700;
+  color: #EE0072;
+}
+
+.legal-sub p,
+.legal-sub li {
+  font-size: 17px;
+  line-height: 1.8;
+  font-weight: 400;
+  color: rgba(37, 37, 37, 0.78);
+}
+
+.legal-sub strong {
+  color: #26292A;
+  font-weight: 700;
+}
+
+.legal-sub ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legal-sub a {
+  color: #26292A;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .legal-hero {
+    padding: 150px 32px 70px;
+  }
+  .legal-hero-inner,
+  .legal-body-inner {
+    padding: 0 32px;
+  }
+  .legal-body {
+    padding: 80px 32px;
+  }
+  .legal-body-inner {
+    gap: 72px;
+  }
+}
+
+@media (max-width: 640px) {
+  .legal-hero {
+    padding: 130px 20px 56px;
+  }
+  .legal-hero-inner,
+  .legal-body-inner {
+    padding: 0 20px;
+  }
+  .legal-body {
+    padding: 60px 20px;
+  }
+  .legal-body-inner {
+    gap: 56px;
+  }
+  .legal-section h2 {
+    font-size: 26px;
+  }
+}

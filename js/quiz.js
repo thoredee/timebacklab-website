@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
       '</button>' +
       '</div>' +
       '<div class="consent-text">' +
-      'By clicking \'Let\'s go\', you agree to our <a href="#" class="consent-link">Terms &amp; Conditions</a> and acknowledge our <a href="#" class="consent-link">Privacy Policy</a>.' +
+      'By clicking \'Let\'s go\', you agree to our <a href="legal.html#terms" class="consent-link">Terms &amp; Conditions</a> and acknowledge our <a href="legal.html#privacy" class="consent-link">Privacy Policy</a>.' +
       '</div>' +
       '</div>' +
       '</div>' +

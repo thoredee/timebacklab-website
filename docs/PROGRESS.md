@@ -103,3 +103,21 @@ Built new intro page per `Timeback Score Quiz - Intro.dc.html` handoff (replaces
 - "The fine print" link currently `href="#"` — wire to privacy/terms page when available
 - Email/company params not yet consumed by quiz (ready for backend/CRM integration)
 - No persistence (client-side only)
+
+## 2026-07-02 — Legal, Privacy & Terms page built and published
+Built `legal.html` + `css/legal.css` from the Claude Design handoff (`Timeback Legal.dc.html` / its `README.md`), combining Terms & Conditions, the Timeback Diagnostic Disclaimer and the Privacy Policy on one page, copy taken verbatim from the handoff.
+
+**What was done differently from the handoff file itself:**
+- The handoff's own nav/footer markup was **not** used — it's a recurring problem with these Claude Design exports (flagged again this session): the handoff nav is narrower and has no mobile hamburger menu, and the handoff's footer has been missing entirely on at least one prior handoff. Instead, `#site-nav` and `footer` were copied verbatim from `index.html`/`quiz.html` (this site's actual, mobile-responsive components), with only the nav link `href`s adjusted for relative paths.
+- Added anchor IDs to each major section (`#terms`, `#diagnostic-disclaimer`, `#privacy`) so other pages can deep-link to a specific part of the page, since the handoff didn't specify anchors.
+- Verified in the browser preview at both desktop and mobile (375px) widths: hero, all three legal sections, footer, and the mobile hamburger menu all render and behave correctly.
+
+**Linked from:**
+- Homepage (`index.html`) and quiz (`quiz.html`) footer Legal column: Privacy → `legal.html#privacy`, Terms → `legal.html#terms` (previously `href="#"` placeholders)
+- Quiz intro page consent line (`js/quiz.js`): "Terms & Conditions" → `legal.html#terms`, "Privacy Policy" → `legal.html#privacy` (previously `href="#"` placeholders)
+
+**CLAUDE.md updated** with: the finished `legal.html` entry in the folder structure, a new "Legal Page" section, and a durable reminder (since this has now come up more than once) to always swap in this site's own nav/footer markup rather than a Claude Design handoff's copy of them, on every future page.
+
+**Open items**
+- Cookies and Compliance footer links still placeholder `#` — no such pages/policies exist yet
+- No consent-management/cookie-banner implementation — out of scope for this pass, handoff didn't call for one

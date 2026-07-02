@@ -33,7 +33,7 @@ git config user.name "Thore Donner"
 timebacklab-website/
   ├── index.html              Home page
   ├── quiz.html               Timeback Score Quiz (linked from homepage's "Start your Timeback Score" button)
-  ├── legal.html              Legal / Privacy / Terms page (in progress, backs the quiz's consent links)
+  ├── legal.html              Legal, Privacy & Terms page (Terms & Conditions, Diagnostic Disclaimer, Privacy Policy — anchors #terms/#diagnostic-disclaimer/#privacy)
   ├── css/
   │   ├── style.css            Shared nav, footer, homepage sections
   │   ├── quiz.css             Quiz-specific styles (stage, cards, results, tier CTA colours)
@@ -57,7 +57,12 @@ The results screen (score gauge + leak card) has a **fixed purple background** (
 
 Current scope: the quiz runs entirely client-side and does not persist results anywhere (no database/sheet integration yet — a future step). The tier CTA buttons and "Order your report" button are still placeholder `#` links, same as other homepage CTAs.
 
-A quiz **intro page** (company name + required, validated email, marketing opt-in, consent copy) was added ahead of the gating questions, and a **Legal/Privacy/Terms page** (`legal.html` / `css/legal.css`) is being built to back the "fine print" and footer links — see `docs/PROGRESS.md` for the detailed build log of that work.
+A quiz **intro page** (company name + required, validated email, marketing opt-in, consent copy) was added ahead of the gating questions. Its consent line links out to `legal.html#terms` and `legal.html#privacy` — see `docs/PROGRESS.md` for the detailed build log of that work.
+
+## Legal Page (`legal.html`)
+Built from a Claude Design handoff (`Timeback Legal.dc.html`) combining Terms & Conditions, the Timeback Diagnostic Disclaimer and the Privacy Policy on one page, with anchor IDs (`#terms`, `#diagnostic-disclaimer`, `#privacy`) so other pages can deep-link to a specific section. Linked from: the homepage/quiz footer's Legal column (Privacy → `#privacy`, Terms → `#terms`), and the quiz intro page's consent line ("Terms & Conditions" → `#terms`, "Privacy Policy" → `#privacy`). Styles live in `css/legal.css`; it reuses `#site-nav` and `footer` from `css/style.css` (see the important reminder below — do NOT reuse a Claude Design handoff's own nav/footer markup).
+
+**Important, recurring reminder (do not reuse the Claude Design handoff's nav/footer verbatim):** every Claude Design handoff `.dc.html` file includes its own copy of the nav and footer, but that copy is **not wide/complete enough for this site** — it's missing the mobile hamburger menu (`.nav-toggle` / `.nav-mobile-panel`) that was custom-built for this site, and has been forgotten by the design tool before. When building any new page from a handoff, **always swap in this site's actual `#site-nav` and `footer` markup** (copy verbatim from `index.html` or `quiz.html`, adjusting only the nav link `href`s for relative paths) instead of the handoff's own nav/footer. The footer must appear on every page, no exceptions.
 
 ## Design Source
 Built from a Claude Design handoff bundle (`_handoff/timeback-brand-dna-development/`), specifically `project/Timeback Homepage.dc.html`. That folder also contains a Brand DNA doc, Component Guide, and Writing Style Guide for the wider brand — useful reference if more pages are built later. The `_handoff` folder is gitignored; it's a local reference only, not part of the deployed site.
@@ -98,8 +103,10 @@ Two breakpoints: `980px` (tablet — collapse to single column, 2-col footer/lab
 Most CTA buttons link to `#` — this matches the source design, which only wired up "Meet the time eaters" → `#problem`. No Contact, About, Blog, etc. pages exist yet. Wire these up once those pages are built or a real contact method (email/form) is decided.
 
 ## Next Steps
-1. Review the homepage locally and confirm it matches expectations
-2. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
-3. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
-4. Push to GitHub and verify Cloudflare Pages auto-deploy
-5. Connect timebacklab.com DNS in Cloudflare
+1. Decide on a real destination for "Speak to someone" / "Contact Us" (mailto, contact page, or booking link)
+2. Build additional pages (About, Contact) when ready, following the same handoff → build pipeline
+3. Connect timebacklab.com DNS in Cloudflare
+4. Wire the footer's Cookies/Compliance links, and the remaining Product/Company/Resources footer columns, once those pages/policies exist
+
+## Ongoing Record-Keeping
+Every time a change is built and pushed live, update `docs/PROGRESS.md` with a dated entry (what was built, why, and any open items) and update this CLAUDE.md if the change affects folder structure, known placeholders, or a durable rule future sessions need to know. This has been the practice since the quiz work began — check `docs/PROGRESS.md`'s dated entries for the ongoing history rather than re-deriving it from git log.
