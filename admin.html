@@ -4,56 +4,247 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Quiz Submissions — Admin</title>
+<title>Admin — timebacklab</title>
 <style>
   * { box-sizing: border-box; }
   body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #26292A;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif;
+    background: #1c1e1f;
     color: #FBF9F2;
     margin: 0;
-    padding: 32px;
+    padding: 32px 20px;
   }
-  h1 { font-size: 22px; margin: 0 0 20px; }
+  .hidden { display: none !important; }
+
+  .logo-mark { font-weight: 800; letter-spacing: -0.04em; }
+  .logo-mark .lt { color: #FBF9F2; }
+  .logo-mark .ll { color: #C6E000; }
+
+  /* ---- Login card ---- */
   .login-box {
     max-width: 360px;
     margin: 80px auto;
     background: #34383a;
     padding: 28px;
-    border-radius: 12px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
   }
-  .login-box label { display: block; margin-bottom: 8px; font-size: 14px; }
+  .login-box h1 { font-size: 20px; margin: 0 0 20px; }
+  .login-box label { display: block; margin-bottom: 8px; font-size: 14px; color: #C8B4EE; }
   .login-box input {
     width: 100%;
     padding: 10px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #555;
     background: #1c1e1f;
     color: #FBF9F2;
     font-size: 14px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
-  .login-box button, .toolbar button {
+  .btn-primary {
     background: #C6E000;
     color: #26292A;
     border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
+    padding: 11px 20px;
+    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     font-size: 14px;
   }
+  .btn-primary:hover { background: #d6f400; }
+  .btn-ghost {
+    background: none;
+    border: 1px solid #555;
+    color: #FBF9F2;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .btn-ghost:hover { border-color: #C6E000; color: #C6E000; }
+  .btn-danger {
+    background: none;
+    border: 1px solid #FF4081;
+    color: #FF4081;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .btn-danger:hover { background: #FF4081; color: #26292A; }
   .error { color: #FF4081; font-size: 13px; margin-bottom: 10px; }
-  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .count { font-size: 14px; color: #C8B4EE; }
+
+  /* ---- Console menu card ---- */
+  .console-box {
+    max-width: 640px;
+    margin: 48px auto;
+    background: #34383a;
+    padding: 36px;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .console-title {
+    font-size: 26px;
+    margin: 0 0 4px;
+  }
+  .console-sub {
+    font-size: 14px;
+    color: #C8B4EE;
+    margin: 0 0 28px;
+  }
+  .menu-grid { display: flex; flex-direction: column; gap: 14px; }
+  .menu-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    text-align: left;
+    background: #26292A;
+    border: 1px solid #3a3d3e;
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    color: inherit;
+    font-family: inherit;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .menu-card:not(.disabled):hover {
+    border-color: #C6E000;
+    transform: translateY(-1px);
+  }
+  .menu-card.disabled { cursor: default; opacity: 0.55; }
+  .menu-icon {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #C6E000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .menu-icon svg { width: 24px; height: 24px; }
+  .menu-icon.dim { background: #4a4d4e; }
+  .menu-text { flex: 1; min-width: 0; }
+  .menu-title { font-size: 16px; font-weight: 700; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .menu-badge { font-size: 11px; font-weight: 600; color: #9a9d9e; text-transform: uppercase; letter-spacing: 0.03em; }
+  .menu-desc { font-size: 13px; color: #b7bbbd; margin: 0; }
+  .menu-arrow { flex: none; color: #6b6e6f; }
+  .console-footer { margin-top: 24px; text-align: right; }
+
+  /* ---- Submissions view ---- */
+  .submissions-wrap { max-width: 1400px; margin: 0 auto; }
+  .sub-card {
+    background: #34383a;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .sub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+  .sub-header-left { display: flex; align-items: center; gap: 14px; }
+  .sub-header-left .logo-mark { font-size: 18px; }
+  .sub-header h1 { font-size: 21px; margin: 0; font-weight: 700; }
+  .sub-header-actions { display: flex; align-items: center; gap: 10px; }
+  .count { font-size: 13px; color: #C8B4EE; margin-right: 4px; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .toolbar select {
+    background: #1c1e1f;
+    color: #FBF9F2;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+  .toolbar .btn-ghost.active { border-color: #C6E000; color: #C6E000; }
+
+  .scroll-wrap { overflow: auto; max-height: 70vh; border-radius: 12px; border: 1px solid #3a3d3e; }
   table { border-collapse: collapse; width: 100%; font-size: 13px; background: #1c1e1f; }
-  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #3a3d3e; white-space: nowrap; }
-  th { background: #34383a; position: sticky; top: 0; }
-  tr:hover { background: #2c2f30; }
-  .scroll-wrap { overflow: auto; max-height: 80vh; border-radius: 8px; }
-  .answers-btn { background: none; border: 1px solid #666; color: #C8B4EE; border-radius: 4px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
-  .hidden { display: none; }
-  pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; background: #1c1e1f; padding: 12px; border-radius: 8px; max-width: 600px; }
+  th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #3a3d3e; white-space: nowrap; }
+  th { background: #26292A; position: sticky; top: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: #C8B4EE; }
+  tr:hover td { background: #24282a; }
+  .group-row td { background: #2c1f45; color: #DDD0FF; font-weight: 700; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .view-btn {
+    background: none;
+    border: 1px solid #666;
+    color: #C6E000;
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .view-btn:hover { background: #C6E000; color: #26292A; border-color: #C6E000; }
+  .tier-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #480078;
+    color: #DDD0FF;
+  }
+
+  /* ---- Modal ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 50;
+  }
+  .modal-card {
+    background: #26292A;
+    border-radius: 18px;
+    max-width: 720px;
+    width: 100%;
+    max-height: 86vh;
+    overflow-y: auto;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-card h2 { font-size: 19px; margin: 0 0 20px; }
+  .modal-section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #C6E000;
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+  .modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 24px;
+    margin-bottom: 22px;
+  }
+  .modal-field dt { font-size: 11.5px; color: #9a9d9e; margin-bottom: 2px; }
+  .modal-field dd { font-size: 13.5px; margin: 0; word-break: break-word; }
+  .modal-divider { border: none; border-top: 1px solid #3a3d3e; margin: 22px 0; }
+  .qa-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 26px; }
+  .qa-item { background: #34383a; border-radius: 10px; padding: 12px 14px; }
+  .qa-question { font-size: 13px; margin: 0 0 6px; color: #FBF9F2; }
+  .qa-meta { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+  .qa-category { font-size: 11px; color: #9a9d9e; text-transform: uppercase; letter-spacing: 0.03em; }
+  .qa-answer { font-size: 13px; font-weight: 700; color: #C6E000; }
+  .modal-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -63,52 +254,132 @@
   <div id="login-error" class="error hidden"></div>
   <label for="password-input">Password</label>
   <input type="password" id="password-input" placeholder="Enter admin password">
-  <button type="button" id="login-btn">View submissions</button>
+  <button type="button" id="login-btn" class="btn-primary">Log in</button>
 </div>
 
-<div id="data-view" class="hidden">
-  <div class="toolbar">
-    <h1>Quiz submissions</h1>
-    <div>
-      <span class="count" id="count-label"></span>
-      <button type="button" id="logout-btn" style="margin-left:16px;">Log out</button>
-    </div>
-  </div>
-  <div class="scroll-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Submission ID</th>
-          <th>Date</th>
-          <th>Company</th>
-          <th>Email</th>
-          <th>Marketing OK</th>
-          <th>Business size</th>
-          <th>Role</th>
-          <th>Score</th>
-          <th>Tier</th>
-          <th>Leak</th>
-          <th>Country</th>
-          <th>Region</th>
-          <th>City</th>
-          <th>ISP</th>
-          <th>IP</th>
-          <th>Answers</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
+<div id="menu-view" class="console-box hidden">
+  <h1 class="console-title logo-mark"><span class="lt">//timeback</span><span class="ll">lab</span><span class="lt"> admin console</span></h1>
+  <p class="console-sub">Choose an area to manage.</p>
+  <div class="menu-grid" id="menu-grid"></div>
+  <div class="console-footer">
+    <button type="button" id="menu-logout-btn" class="btn-ghost">Log out</button>
   </div>
 </div>
+
+<div id="submissions-view" class="submissions-wrap hidden">
+  <div class="sub-card">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <span class="logo-mark"><span class="lt">//timeback</span><span class="ll">lab</span></span>
+        <h1>Timeback score submissions</h1>
+      </div>
+      <div class="sub-header-actions">
+        <span class="count" id="count-label"></span>
+        <button type="button" id="back-btn" class="btn-ghost">Back to console</button>
+        <button type="button" id="logout-btn" class="btn-ghost">Log out</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button type="button" id="group-btn" class="btn-ghost">Group by company</button>
+      <select id="sort-field">
+        <option value="created_at">Sort by: Date</option>
+        <option value="company_name">Sort by: Company</option>
+        <option value="email">Sort by: Email</option>
+        <option value="business_size">Sort by: Business size</option>
+        <option value="role">Sort by: Role</option>
+        <option value="tier_name">Sort by: Tier</option>
+        <option value="leak_category">Sort by: Leak</option>
+        <option value="score_percent">Sort by: Score</option>
+        <option value="country">Sort by: Country</option>
+        <option value="city">Sort by: City</option>
+      </select>
+      <button type="button" id="sort-dir-btn" class="btn-ghost">↓ Descending</button>
+    </div>
+
+    <div class="scroll-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Submission ID</th>
+            <th>Date</th>
+            <th>Company</th>
+            <th>Email</th>
+            <th>Business size</th>
+            <th>Role</th>
+            <th>Tier</th>
+            <th>Leak</th>
+            <th>Score</th>
+            <th>Country</th>
+            <th>City</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
 
 <script>
   const PW_KEY = 'tbl_admin_pw';
+  let submissions = [];
+  let groupByCompany = false;
+  let sortField = 'created_at';
+  let sortDir = 'desc';
+
+  const ICONS = {
+    clipboard: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"></rect><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"></path><path d="M9 11h6M9 15h6M9 7h6"></path></svg>',
+    creditCard: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h4"></path></svg>',
+    users: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+    userGear: '<svg viewBox="0 0 24 24" fill="none" stroke="#26292A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><circle cx="19" cy="16" r="2.5"></circle><path d="M19 12.5v1M19 18.5v1M15.9 14.2l.9.5M21.2 17.3l.9.5M15.9 17.8l.9-.5M21.2 14.7l.9-.5"></path></svg>',
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M9 18l6-6-6-6"></path></svg>',
+  };
+
+  const MENU_ITEMS = [
+    {
+      id: 'quiz-submissions',
+      title: 'Timeback score submissions',
+      desc: 'View all entries submitted into the system.',
+      icon: ICONS.clipboard,
+      live: true,
+    },
+    {
+      id: 'paid-reports',
+      title: 'Paid requests for diagnostic reports',
+      desc: 'Manage the requests for paid report requests.',
+      icon: ICONS.creditCard,
+      live: false,
+    },
+    {
+      id: 'group-reports',
+      title: 'Group diagnostic reports',
+      desc: 'Manage co-ordinated group survey and reports.',
+      icon: ICONS.users,
+      live: false,
+    },
+    {
+      id: 'account-management',
+      title: 'Customer account management',
+      desc: 'Create and manage online website accounts.',
+      icon: ICONS.userGear,
+      live: false,
+    },
+  ];
 
   function escapeHtml(str) {
     return String(str == null ? '' : str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+  }
+
+  function showView(id) {
+    ['login-view', 'menu-view', 'submissions-view'].forEach(function (v) {
+      document.getElementById(v).classList.toggle('hidden', v !== id);
+    });
   }
 
   function showError(msg) {
@@ -125,46 +396,207 @@
     return res.json();
   }
 
-  function renderRows(submissions) {
-    const body = document.getElementById('table-body');
-    document.getElementById('count-label').textContent = submissions.length + ' total';
-    body.innerHTML = submissions.map(function (s) {
-      const date = s.created_at ? new Date(s.created_at).toLocaleString() : '';
-      const answersId = 'answers-' + s.id;
+  async function deleteSubmission(password, submissionId) {
+    const res = await fetch('/api/admin/submissions', {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': password, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ submissionId: submissionId }),
+    });
+    if (!res.ok) throw new Error('Delete failed');
+    return res.json();
+  }
+
+  function renderMenu() {
+    const grid = document.getElementById('menu-grid');
+    grid.innerHTML = MENU_ITEMS.map(function (item) {
+      const disabledClass = item.live ? '' : ' disabled';
+      const iconClass = item.live ? '' : ' dim';
+      const badge = item.live ? '' : ' <span class="menu-badge">| Not live</span>';
       return (
-        '<tr>' +
-        '<td>' + escapeHtml(s.submission_id) + '</td>' +
-        '<td>' + escapeHtml(date) + '</td>' +
-        '<td>' + escapeHtml(s.company_name) + '</td>' +
-        '<td>' + escapeHtml(s.email) + '</td>' +
-        '<td>' + (s.marketing_opt_in ? 'Yes' : 'No') + '</td>' +
-        '<td>' + escapeHtml(s.business_size) + '</td>' +
-        '<td>' + escapeHtml(s.role) + '</td>' +
-        '<td>' + escapeHtml(s.score_percent) + '%</td>' +
-        '<td>' + escapeHtml(s.tier_name) + '</td>' +
-        '<td>' + escapeHtml(s.leak_category) + '</td>' +
-        '<td>' + escapeHtml(s.country) + '</td>' +
-        '<td>' + escapeHtml(s.region) + '</td>' +
-        '<td>' + escapeHtml(s.city) + '</td>' +
-        '<td>' + escapeHtml(s.isp) + '</td>' +
-        '<td>' + escapeHtml(s.ip_address) + '</td>' +
-        '<td><button type="button" class="answers-btn" data-target="' + answersId + '">View</button>' +
-        '<pre id="' + answersId + '" class="hidden">' + escapeHtml(JSON.stringify(JSON.parse(s.answers_json || '[]'), null, 2)) + '</pre></td>' +
-        '</tr>'
+        '<button type="button" class="menu-card' + disabledClass + '" data-id="' + item.id + '"' + (item.live ? '' : ' disabled') + '>' +
+        '<span class="menu-icon' + iconClass + '">' + item.icon + '</span>' +
+        '<span class="menu-text">' +
+        '<p class="menu-title">' + escapeHtml(item.title) + badge + '</p>' +
+        '<p class="menu-desc">' + escapeHtml(item.desc) + '</p>' +
+        '</span>' +
+        (item.live ? '<span class="menu-arrow">' + ICONS.chevron + '</span>' : '') +
+        '</button>'
       );
     }).join('');
+  }
+
+  function getSortValue(s, field) {
+    if (field === 'score_percent') return Number(s.score_percent) || 0;
+    return (s[field] || '').toString().toLowerCase();
+  }
+
+  function sortedSubmissions(list) {
+    const sorted = list.slice().sort(function (a, b) {
+      const va = getSortValue(a, sortField);
+      const vb = getSortValue(b, sortField);
+      let cmp;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        cmp = va - vb;
+      } else {
+        cmp = String(va).localeCompare(String(vb));
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }
+
+  function rowHtml(s) {
+    const date = s.created_at ? new Date(s.created_at).toLocaleString() : '';
+    return (
+      '<tr>' +
+      '<td>' + escapeHtml(s.submission_id) + '</td>' +
+      '<td>' + escapeHtml(date) + '</td>' +
+      '<td>' + escapeHtml(s.company_name) + '</td>' +
+      '<td>' + escapeHtml(s.email) + '</td>' +
+      '<td>' + escapeHtml(s.business_size) + '</td>' +
+      '<td>' + escapeHtml(s.role) + '</td>' +
+      '<td><span class="tier-pill">' + escapeHtml(s.tier_name) + '</span></td>' +
+      '<td>' + escapeHtml(s.leak_category) + '</td>' +
+      '<td>' + escapeHtml(s.score_percent) + '%</td>' +
+      '<td>' + escapeHtml(s.country) + '</td>' +
+      '<td>' + escapeHtml(s.city) + '</td>' +
+      '<td><button type="button" class="view-btn" data-view="' + escapeHtml(s.submission_id) + '">View</button></td>' +
+      '</tr>'
+    );
+  }
+
+  function renderRows() {
+    document.getElementById('count-label').textContent = submissions.length + ' total';
+    const body = document.getElementById('table-body');
+    document.getElementById('group-btn').classList.toggle('active', groupByCompany);
+    document.getElementById('sort-dir-btn').textContent = sortDir === 'asc' ? '↑ Ascending' : '↓ Descending';
+
+    if (!groupByCompany) {
+      body.innerHTML = sortedSubmissions(submissions).map(rowHtml).join('');
+      return;
+    }
+
+    const groups = {};
+    submissions.forEach(function (s) {
+      const key = s.company_name || '(No company)';
+      groups[key] = groups[key] || [];
+      groups[key].push(s);
+    });
+    const groupNames = Object.keys(groups).sort(function (a, b) { return a.localeCompare(b); });
+    let html = '';
+    groupNames.forEach(function (name) {
+      html += '<tr class="group-row"><td colspan="12">' + escapeHtml(name) + ' (' + groups[name].length + ')</td></tr>';
+      html += sortedSubmissions(groups[name]).map(rowHtml).join('');
+    });
+    body.innerHTML = html;
+  }
+
+  function closeModal() {
+    document.getElementById('modal-root').innerHTML = '';
+  }
+
+  function openModal(submissionId) {
+    const s = submissions.filter(function (x) { return x.submission_id === submissionId; })[0];
+    if (!s) return;
+    const date = s.created_at ? new Date(s.created_at).toLocaleString() : '';
+    let answers = [];
+    try { answers = JSON.parse(s.answers_json || '[]'); } catch (e) {}
+
+    const qaHtml = answers.map(function (a) {
+      return (
+        '<div class="qa-item">' +
+        '<p class="qa-question">' + escapeHtml(a.question) + '</p>' +
+        '<div class="qa-meta">' +
+        '<span class="qa-category">' + escapeHtml(a.category) + '</span>' +
+        '<span class="qa-answer">' + escapeHtml(a.label) + '</span>' +
+        '</div></div>'
+      );
+    }).join('');
+
+    const field = function (label, value) {
+      return '<div class="modal-field"><dt>' + escapeHtml(label) + '</dt><dd>' + escapeHtml(value) + '</dd></div>';
+    };
+
+    const html =
+      '<div class="modal-overlay" id="modal-overlay">' +
+      '<div class="modal-card">' +
+      '<h2>' + escapeHtml(s.company_name || 'Submission') + '</h2>' +
+
+      '<p class="modal-section-title">Submission</p>' +
+      '<div class="modal-grid">' +
+      field('Submission ID', s.submission_id) +
+      field('Date', date) +
+      field('Score', s.score_percent + '%') +
+      field('Tier', s.tier_name) +
+      field('Leak category', s.leak_category) +
+      '</div>' +
+
+      '<p class="modal-section-title">Company &amp; contact</p>' +
+      '<div class="modal-grid">' +
+      field('Company', s.company_name) +
+      field('Email', s.email) +
+      field('Marketing opt-in', s.marketing_opt_in ? 'Yes' : 'No') +
+      field('Business size', s.business_size) +
+      field('Role', s.role) +
+      '</div>' +
+
+      '<p class="modal-section-title">Location</p>' +
+      '<div class="modal-grid">' +
+      field('Country', s.country) +
+      field('Region', s.region) +
+      field('City', s.city) +
+      field('Timezone', s.timezone) +
+      field('ISP', s.isp) +
+      field('IP address', s.ip_address) +
+      '</div>' +
+
+      '<hr class="modal-divider">' +
+
+      '<p class="modal-section-title">Questions &amp; answers</p>' +
+      '<div class="qa-list">' + qaHtml + '</div>' +
+
+      '<div class="modal-actions">' +
+      '<button type="button" class="btn-danger" id="modal-delete-btn" data-id="' + escapeHtml(s.submission_id) + '">Delete record</button>' +
+      '<button type="button" class="btn-ghost" id="modal-close-btn">Close</button>' +
+      '</div>' +
+      '</div></div>';
+
+    document.getElementById('modal-root').innerHTML = html;
+
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-overlay') closeModal();
+    });
+    document.getElementById('modal-delete-btn').addEventListener('click', async function () {
+      if (!confirm('Delete this submission? This cannot be undone.')) return;
+      const pw = sessionStorage.getItem(PW_KEY);
+      try {
+        await deleteSubmission(pw, submissionId);
+        submissions = submissions.filter(function (x) { return x.submission_id !== submissionId; });
+        closeModal();
+        renderRows();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
   }
 
   async function login(password) {
     try {
       const data = await fetchSubmissions(password);
+      submissions = data.submissions;
       sessionStorage.setItem(PW_KEY, password);
-      document.getElementById('login-view').classList.add('hidden');
-      document.getElementById('data-view').classList.remove('hidden');
-      renderRows(data.submissions);
+      renderMenu();
+      showView('menu-view');
     } catch (err) {
       showError(err.message);
     }
+  }
+
+  function logout() {
+    sessionStorage.removeItem(PW_KEY);
+    submissions = [];
+    showView('login-view');
   }
 
   document.getElementById('login-btn').addEventListener('click', function () {
@@ -176,16 +608,42 @@
     if (e.key === 'Enter') document.getElementById('login-btn').click();
   });
 
-  document.getElementById('logout-btn').addEventListener('click', function () {
-    sessionStorage.removeItem(PW_KEY);
-    document.getElementById('data-view').classList.add('hidden');
-    document.getElementById('login-view').classList.remove('hidden');
+  document.getElementById('menu-logout-btn').addEventListener('click', logout);
+  document.getElementById('logout-btn').addEventListener('click', logout);
+
+  document.getElementById('menu-grid').addEventListener('click', function (e) {
+    const card = e.target.closest('.menu-card');
+    if (!card || card.disabled) return;
+    if (card.getAttribute('data-id') === 'quiz-submissions') {
+      renderRows();
+      showView('submissions-view');
+    }
+  });
+
+  document.getElementById('back-btn').addEventListener('click', function () {
+    renderMenu();
+    showView('menu-view');
+  });
+
+  document.getElementById('group-btn').addEventListener('click', function () {
+    groupByCompany = !groupByCompany;
+    renderRows();
+  });
+
+  document.getElementById('sort-field').addEventListener('change', function (e) {
+    sortField = e.target.value;
+    renderRows();
+  });
+
+  document.getElementById('sort-dir-btn').addEventListener('click', function () {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    renderRows();
   });
 
   document.getElementById('table-body').addEventListener('click', function (e) {
-    const btn = e.target.closest('.answers-btn');
+    const btn = e.target.closest('.view-btn');
     if (!btn) return;
-    document.getElementById(btn.getAttribute('data-target')).classList.toggle('hidden');
+    openModal(btn.getAttribute('data-view'));
   });
 
   const savedPw = sessionStorage.getItem(PW_KEY);
