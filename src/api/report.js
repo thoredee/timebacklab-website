@@ -43,6 +43,31 @@ const TIER_NAMES = {
   driver: "In the driver's seat",
 };
 
+// The headline + overall summary shown on the purple results screen. Mirrored
+// here so the report can open with the same story the quiz-taker just read.
+const TIER_CONTENT = {
+  trapped: {
+    headline: ['Held hostage.', 'By your own systems.'],
+    narrative: "High friction, manual workarounds and chaotic systems are today's reality. The grind is winning, and burnout is close.",
+    prescription: "You need a full process rebuild before the cracks get wider. We take this off your plate entirely: a fundamental systems rebuild and a tech migration built around how your business actually runs, not a patch on top of what isn't working.",
+  },
+  overloaded: {
+    headline: ['Overloaded.', 'Not out of options.'],
+    narrative: "Some systems exist, but they don't talk to each other. Your team plugs the gaps by hand, and the tools bought to save time are quietly creating more of it.",
+    prescription: "It's time to eliminate the manual bridges. We work alongside your team to integrate your workflows properly, coaching you through the fix so the systems finally talk to each other.",
+  },
+  stretched: {
+    headline: ['Stretched thin.', 'Not stuck.'],
+    narrative: "You run a tight ship. Everything holds together, but only because you're the one holding it. Constant intervention is the cost of that control.",
+    prescription: "The fastest wins here are the marginal ones. A focused audit and the right toolkit will free up real capacity, without you having to rebuild anything that already works.",
+  },
+  driver: {
+    headline: ["In the driver's seat.", 'Ready to scale.'],
+    narrative: "Your operations are smooth, documented and largely automated. Basic admin drag isn't holding you back any more.",
+    prescription: "You're ready for what's next: agentic AI and decision intelligence, built to multiply your output without adding headcount.",
+  },
+};
+
 // Same banding the quiz uses: average answer (1 to 4) -> percent -> tier.
 function tierForAverage(avg) {
   const percent = Math.max(0, Math.min(100, Math.round(((avg - 1) / 3) * 100)));
@@ -114,7 +139,7 @@ export async function handleReport(request, env) {
         return { answer: a, nodeId: qNodeId };
       });
 
-    return { key: key, tier: tier, summaryId: summaryId, flagged: flagged };
+    return { key: key, tier: tier, avg: avg, summaryId: summaryId, flagged: flagged };
   });
 
   const allIds = summaryIds.concat(questionIds);
@@ -137,12 +162,16 @@ export async function handleReport(request, env) {
           body: nodeMap[f.nodeId],
         };
       });
+    // Leak severity 0–100: higher = more time being lost in this area (lower
+    // average answer). Drives the priority-order diagram on the report page.
+    const leakScore = Math.max(0, Math.min(100, Math.round(((4 - plan.avg) / 3) * 100)));
     return {
       key: plan.key,
       title: SECTION_TITLES[plan.key],
       intro: SECTION_INTROS[plan.key],
       tier: plan.tier,
       tierName: TIER_NAMES[plan.tier],
+      leakScore: leakScore,
       summary: nodeMap[plan.summaryId] || null,
       questions: questions,
     };
@@ -159,6 +188,7 @@ export async function handleReport(request, env) {
     leakCategoryName: SECTION_TITLES[row.leak_category] || row.leak_category,
     roleLabel: ROLE_LABELS[row.role] || row.role,
     sizeLabel: SIZE_LABELS[row.business_size] || row.business_size,
+    tier: TIER_CONTENT[row.tier_key] || null,
     sections: sections,
   };
 
